@@ -1,0 +1,4 @@
+interface:
+  display_name: "Runtime Evidence Debugger"
+  short_description: "Hypothesis-driven debugging with runtime log evidence"
+  default_prompt: "Use $runtime-evidence-debugger to debug this issue with runtime evidence before making any fix."

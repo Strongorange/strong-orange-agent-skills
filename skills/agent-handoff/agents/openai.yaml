@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Handoff"
+  short_description: "Draft focused handoff prompts and file context"
+  default_prompt: "Use $agent-handoff to draft a focused new-thread handoff prompt with relevant files and acceptance criteria."
