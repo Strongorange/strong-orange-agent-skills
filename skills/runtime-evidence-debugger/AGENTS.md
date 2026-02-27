@@ -7,7 +7,7 @@ Use this guide when a bug cannot be explained by reading code alone, when previo
 ## Prerequisites
 
 A local HTTP log server must be running at `POST http://127.0.0.1:7827`.
-Server setup: see `~/agent-tools/debug-server/README.md`
+Server setup: see `server/README.md` in this skill directory
 
 Quick start:
 ```bash

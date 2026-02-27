@@ -16,7 +16,7 @@ description: Evidence-based debugging for any language or framework. Assumes a l
 `POST http://127.0.0.1:7827` 서버가 실행 중이어야 한다.
 body JSON의 `logFile` 절대경로에 NDJSON 한 줄 append + CORS 허용.
 서버 구현 방식(Docker 등)은 무관하며, skill 내에서 서버를 시작하지 않는다.
-서버 실행 방법은 `~/agent-tools/debug-server/README.md` 참조.
+서버 실행 방법은 이 스킬의 `server/README.md` 참조.
 
 ---
 
