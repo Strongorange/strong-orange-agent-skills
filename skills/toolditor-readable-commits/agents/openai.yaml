@@ -1,0 +1,4 @@
+interface:
+  display_name: "Toolditor Readable Commits"
+  short_description: "Split changes into review-friendly Korean commit history"
+  default_prompt: "Use $toolditor-readable-commits to split current git changes into small, readable, revert-friendly commits with Korean [type] messages."

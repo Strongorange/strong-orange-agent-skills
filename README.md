@@ -11,7 +11,7 @@ npx skills add Strongorange/strong-orange-agent-skills --all
 Install specific skills:
 
 ```bash
-npx skills add Strongorange/strong-orange-agent-skills --skill agent-handoff --skill strategy-template-governor
+npx skills add Strongorange/strong-orange-agent-skills --skill agent-handoff --skill strategy-template-governor --skill toolditor-readable-commits
 ```
 
 List available skills without installing:
@@ -26,5 +26,6 @@ npx skills add Strongorange/strong-orange-agent-skills --list
 - runtime-evidence-debugger
 - scaffold-dev-verify
 - strategy-template-governor
+- toolditor-readable-commits
 - skill-creator
 - skill-installer
