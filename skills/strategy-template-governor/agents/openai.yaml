@@ -1,0 +1,4 @@
+interface:
+  display_name: "Strategy Template Governor"
+  short_description: "Choose Strategy vs Template with evidence"
+  default_prompt: "Use $strategy-template-governor to decide Strategy, Template Method, or Hybrid with code-grounded evidence and a testable review packet."
