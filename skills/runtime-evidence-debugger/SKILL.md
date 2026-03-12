@@ -18,12 +18,24 @@ body JSON의 `logFile` 절대경로에 NDJSON 한 줄 append + CORS 허용.
 서버 구현 방식(Docker 등)은 무관하며, skill 내에서 서버를 시작하지 않는다.
 서버 실행 방법은 이 스킬의 `server/README.md` 참조.
 
+브라우저가 `connect-src` CSP 때문에 `localhost`/`127.0.0.1`로 직접 `fetch`하지 못하는 앱이라면,
+브라우저에서 디버그 서버를 직접 호출하지 말고 **same-origin 앱 API 프록시**를 둔다.
+
+- 예: Next.js `pages/api/agentRuntimeDebug.ts`
+- 브라우저 계측은 `/api/agentRuntimeDebug`만 호출
+- API route가 서버에서 `http://127.0.0.1:7827`로 프록시
+- CSP 에러가 보이면 포트/호스트를 계속 바꿔보지 말고 이 모드로 즉시 전환
+
 ---
 
 ## Step 0: 서버 확인 (실패 시 즉시 중단)
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}" -X POST http://127.0.0.1:7827 --max-time 2
+curl -s -o /dev/null -w "%{http_code}" \
+  -X POST http://127.0.0.1:7827 \
+  -H 'Content-Type: application/json' \
+  -d '{}' \
+  --max-time 2
 ```
 
 200이 아니면 사용자에게 서버 미실행 안내 후 **즉시 중단**.
@@ -64,6 +76,53 @@ fetch('http://127.0.0.1:7827',{method:'POST',headers:{'Content-Type':'applicatio
 // #endregion
 ```
 
+**JS/TS — 브라우저가 CSP로 localhost 호출을 막는 경우 (권장 프록시 모드):**
+
+```ts
+// #region agent log
+fetch('/api/agentRuntimeDebug',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'SESSION_ID',runId:'debug',hypothesisId:'A',location:'file.ts:LINE',message:'설명',data:{key:val,stack:new Error().stack?.split('\n').slice(1,5)},timestamp:Date.now()})}).catch(()=>{});
+// #endregion
+```
+
+**Next.js Pages Router 프록시 예시:**
+
+```ts
+import type { NextApiRequest, NextApiResponse } from 'next'
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false })
+  }
+
+  const body = req.body ?? {}
+  const sessionId = String(body.sessionId ?? '')
+  if (!sessionId) {
+    return res.status(400).json({ success: false, message: 'sessionId is required' })
+  }
+
+  const proxyResponse = await fetch('http://127.0.0.1:7827', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...body,
+      logFile: `${process.cwd()}/.cursor/debug-${sessionId}.log`,
+    }),
+  })
+
+  if (!proxyResponse.ok) {
+    return res.status(502).json({ success: false, message: 'debug proxy failed' })
+  }
+
+  return res.status(200).json({ success: true })
+}
+```
+
+**Transport 선택 규칙:**
+
+- 브라우저 외부 origin 호출이 가능한 환경이면 direct fetch 사용
+- 브라우저 콘솔에 `Content Security Policy` 또는 `connect-src` 위반이 보이면 same-origin 프록시 사용
+- Node/server-side 계측은 계속 디버그 서버 직접 호출 가능
+
 **Python·Go 등 서버사이드 (직접 파일 append, 서버 불필요):**
 
 ```python
@@ -77,7 +136,7 @@ with open('LOG_FILE','a') as f: f.write(json.dumps({'logFile':'LOG_FILE','sessio
 
 | 필드 | 값 |
 |---|---|
-| `logFile` | LOG_FILE 절대경로 |
+| `logFile` | LOG_FILE 절대경로. 단, same-origin 프록시가 서버에서 주입하면 브라우저 payload에서는 생략 가능 |
 | `sessionId` | SESSION_ID |
 | `runId` | `"debug"` (초기) / `"post-fix"` (검증) |
 | `hypothesisId` | `"A"` ~ `"E"` |
@@ -127,6 +186,7 @@ LOG_FILE 읽기. 각 가설 판정:
 - CONFIRMED 가설에 대해서만, 최소 범위로 수정
 - 계측 코드 유지 (검증 전 제거 금지)
 - REJECTED 가설 코드 변경 즉시 되돌림
+- 프록시 모드를 썼다면 디버그용 API route/helper도 계측의 일부로 간주하고 검증 완료 전 제거하지 않는다
 
 ---
 
@@ -145,7 +205,8 @@ LOG_FILE 읽기. 각 가설 판정:
 
 사용자 확인 후에만:
 1. 모든 `#region agent log` / `#endregion` 블록 제거
-2. `delete_file`로 LOG_FILE 삭제
+2. 프록시 모드를 썼다면 디버그용 API route/helper 제거
+3. `delete_file`로 LOG_FILE 삭제
 
 ---
 
@@ -157,3 +218,4 @@ LOG_FILE 읽기. 각 가설 판정:
 - `setTimeout` / `sleep`을 픽스로 사용 금지
 - shell rm/touch 금지 — 로그 파일 조작은 `delete_file` 도구만
 - 성공 선언 시 특정 로그 라인 인용 필수
+- CSP 에러가 보이면 브라우저 direct fetch를 고집하지 말고 same-origin 프록시로 전환
