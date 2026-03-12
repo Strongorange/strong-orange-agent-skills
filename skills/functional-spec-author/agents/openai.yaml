@@ -1,0 +1,4 @@
+interface:
+  display_name: "Functional Spec Author"
+  short_description: "Grounded feature spec writer"
+  default_prompt: "Use $functional-spec-author to create or update a grounded AS-IS or TO-BE functional specification for this feature."
