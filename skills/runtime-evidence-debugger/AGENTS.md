@@ -9,6 +9,13 @@ Use this guide when a bug cannot be explained by reading code alone, when previo
 A local HTTP log server must be running at `POST http://127.0.0.1:7827`.
 Server setup: see `server/README.md` in this skill directory
 
+If the target web app blocks browser `fetch` to `localhost`/`127.0.0.1` due to CSP `connect-src`,
+do not keep retrying hosts/ports. Switch to a same-origin app proxy immediately.
+
+- Browser code logs to `/api/agentRuntimeDebug`
+- The app API route forwards to `http://127.0.0.1:7827`
+- Keep the proxy route/helper until post-fix verification is complete
+
 Quick start:
 ```bash
 docker build -t agent-debug-server ~/agent-tools/debug-server/
@@ -18,7 +25,11 @@ docker run -d -p 7827:7827 -v $(pwd):$(pwd) --name agent-debug-server agent-debu
 ## Step 0: Verify Server
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}" -X POST http://127.0.0.1:7827 --max-time 2
+curl -s -o /dev/null -w "%{http_code}" \
+  -X POST http://127.0.0.1:7827 \
+  -H 'Content-Type: application/json' \
+  -d '{}' \
+  --max-time 2
 ```
 
 If not 200, inform the user and stop.
@@ -44,6 +55,13 @@ fetch('http://127.0.0.1:7827',{method:'POST',headers:{'Content-Type':'applicatio
 // #endregion
 ```
 
+**JS/TS (CSP-safe same-origin proxy):**
+```ts
+// #region agent log
+fetch('/api/agentRuntimeDebug',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'SESSION_ID',runId:'debug',hypothesisId:'A',location:'file.ts:LINE',message:'description',data:{key:val,stack:new Error().stack?.split('\n').slice(1,5)},timestamp:Date.now()})}).catch(()=>{});
+// #endregion
+```
+
 **Python (direct file append):**
 ```python
 # #region agent log
@@ -52,7 +70,8 @@ with open('LOG_FILE','a') as f: f.write(json.dumps({'logFile':'LOG_FILE','sessio
 # #endregion
 ```
 
-Required payload fields: `logFile`, `sessionId`, `runId` (`"debug"` or `"post-fix"`), `hypothesisId`, `location`, `stack`, `timestamp`.
+Required payload fields: `sessionId`, `runId` (`"debug"` or `"post-fix"`), `hypothesisId`, `location`, `stack`, `timestamp`.
+`logFile` is still required when talking to the debug server directly; a same-origin proxy route may inject it server-side.
 
 ## Step 3: Delete Log → Request Reproduction
 
@@ -85,7 +104,8 @@ Fix only CONFIRMED hypotheses, minimal scope. Keep instrumentation until verifie
 
 After user confirmation:
 1. Remove all `#region agent log` / `#endregion` blocks.
-2. Delete LOG_FILE with `delete_file`.
+2. Remove debug proxy route/helper if proxy mode was used.
+3. Delete LOG_FILE with `delete_file`.
 
 ## Hard Rules
 
@@ -94,3 +114,4 @@ After user confirmation:
 - Never use `setTimeout`/`sleep` as a fix
 - Never use shell `rm`/`touch` for log files — use `delete_file` only
 - Always cite specific log lines when declaring success
+- If browser CSP blocks direct logging, use same-origin proxy mode

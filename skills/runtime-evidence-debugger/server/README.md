@@ -38,6 +38,27 @@ docker run -d \
 docker stop agent-debug-server && docker rm agent-debug-server
 ```
 
+## 헬스체크
+
+이 서버 구현은 **유효한 JSON body**를 기대한다. 빈 POST는 400일 수 있으므로 아래처럼 확인한다.
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" \
+  -X POST http://127.0.0.1:7827 \
+  -H 'Content-Type: application/json' \
+  -d '{}' \
+  --max-time 2
+```
+
+## 브라우저 CSP 우회
+
+웹앱이 `connect-src` CSP 때문에 브라우저에서 `localhost`/`127.0.0.1`로 직접 `fetch`하지 못하면,
+브라우저는 same-origin 앱 API를 호출하고 그 API가 이 서버로 프록시해야 한다.
+
+- 브라우저: `POST /api/agentRuntimeDebug`
+- 앱 API route: `POST http://127.0.0.1:7827`
+- API route가 `logFile` 절대경로를 서버에서 주입
+
 ## 에이전트별 포트 권장
 
 | 에이전트           | 권장 포트 | 비고                               |
