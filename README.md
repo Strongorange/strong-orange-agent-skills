@@ -27,5 +27,6 @@ npx skills add Strongorange/strong-orange-agent-skills --list
 - runtime-evidence-debugger
 - scaffold-dev-verify
 - strategy-template-governor
+- ts-web-tdd-orchestrator
 - skill-creator
 - skill-installer
