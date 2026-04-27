@@ -180,7 +180,7 @@ eval-dashboard/
 └── package.json
 ```
 
-레퍼런스 구현: `agent-workflow-test/poc/interview/` (이 머신 내 실제 동작 확인된 패턴)
+구체 구현 패턴은 `references/poc-dashboard-pattern.md`를 참고한다.
 
 ---
 
@@ -197,8 +197,6 @@ eval-dashboard/
 
 ## References
 
-- 동작 확인된 PoC: `/home/ubuntu/github/tooldi/tws-editor-api/agent-workflow-test/poc/interview/`
-- 서버 구현 예시: `poc/interview/src/dashboard/server.ts`
-- UI 구현 예시: `poc/interview/public/app.js`
-- 집계 구현 예시: `poc/interview/src/aggregate.ts`
-- 리포트 예시: `poc/interview/runs/2026-04-23T06-33-32-673Z/REPORT.md`
+- 평가 설계 템플릿: `references/evaluation-design-template.md`
+- score envelope 예시: `references/score-envelope-examples.md`
+- 최소 대시보드 패턴: `references/poc-dashboard-pattern.md`
