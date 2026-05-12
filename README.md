@@ -25,6 +25,7 @@ npx skills add Strongorange/strong-orange-agent-skills --list
 - agent-handoff
 - functional-spec-author
 - hitl-eval-dashboard
+- resume-driven-development-coach
 - runtime-evidence-debugger
 - scaffold-dev-verify
 - strategy-template-governor

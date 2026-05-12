@@ -1,0 +1,13 @@
+identities:
+  git_emails:
+    - you@example.com
+  github_users:
+    - your-github-username
+  obsidian_authors:
+    - your-display-name
+
+watched_repos:
+  - /absolute/path/to/repo-1
+  - /absolute/path/to/repo-2
+
+obsidian_vault: /absolute/path/to/obsidian-vault
