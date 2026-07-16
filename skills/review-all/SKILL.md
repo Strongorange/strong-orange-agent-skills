@@ -1,11 +1,11 @@
 ---
 name: review-all
-description: Run all three clean-lens reviews (comments, tests, SOLID/clean-code) over a diff or files and merge results into per-domain buckets plus a shared "other" bucket. Use when the user wants a full clean-code review, a comprehensive review across comment/test/design lenses, or invokes the combined review — size-adaptive (inline for small diffs, fan-out subagents for large ones). Triggers include "전체 리뷰", "클린 리뷰 전부", "코드 정리 리뷰", "review all lenses", "full clean review".
+description: Run all four clean-lens reviews (comments, tests, SOLID/clean-code, ACID/transactions) over a diff or files and merge results into per-domain buckets plus a shared "other" bucket. Use when the user wants a full clean-code review, a comprehensive review across comment/test/design/transaction lenses, or invokes the combined review — size-adaptive (inline for small diffs, fan-out subagents for large ones). Triggers include "전체 리뷰", "클린 리뷰 전부", "코드 정리 리뷰", "review all lenses", "full clean review".
 ---
 
 # 통합 리뷰 오케스트레이터 (review-all)
 
-세 렌즈(주석·테스트·SOLID)를 한 번에 돌려 도메인별 버킷 + 공통 `other`로 병합한다. 각 렌즈의 게이트·지적금지는 해당 서브스킬(`review-comments`/`review-tests`/`review-solid`)의 SKILL.md가 정본이다 — **그 규칙을 그대로 적용**한다.
+네 렌즈(주석·테스트·SOLID·ACID)를 한 번에 돌려 도메인별 버킷 + 공통 `other`로 병합한다. 각 렌즈의 게이트·지적금지는 해당 서브스킬(`review-comments`/`review-tests`/`review-solid`/`review-acid`)의 SKILL.md가 정본이다 — **그 규칙을 그대로 적용**한다.
 
 ## 실행
 
@@ -18,14 +18,14 @@ description: Run all three clean-lens reviews (comments, tests, SOLID/clean-code
 - 테스트 파일은 test 렌즈, 그 외는 comment + solid 렌즈. (테스트 파일도 주석 렌즈는 적용 가능 — 파일 성격으로 판단.)
 
 ### 2. 규모 적응
-- **변경 파일 ≤ 6개**: 메인 컨텍스트에서 인라인으로 파일별 3렌즈 순차 적용. fan-out 불필요.
+- **변경 파일 ≤ 6개**: 메인 컨텍스트에서 인라인으로 파일별 해당 렌즈(비테스트=주석·SOLID·ACID, 테스트=테스트) 순차 적용. fan-out 불필요.
 - **> 6개**: `Workflow`로 파일×렌즈 fan-out. 렌즈당 1패스면 충분(실측: 리뷰어 편차 ~0). 아래 패턴 사용:
 
 ```js
-const LENS_SKILL = { comment: 'review-comments', test: 'review-tests', solid: 'review-solid' }
+const LENS_SKILL = { comment: 'review-comments', test: 'review-tests', solid: 'review-solid', acid: 'review-acid' }
 const jobs = []
 for (const f of files) {
-  const lenses = isTest(f) ? ['test'] : ['comment', 'solid']
+  const lenses = isTest(f) ? ['test'] : ['comment', 'solid', 'acid']
   for (const L of lenses) jobs.push({ f, L })
 }
 const SCHEMA = { type:'object', properties:{
@@ -60,7 +60,7 @@ const results = await parallel(jobs.map(j => () =>
 ```
 
 ## 핵심 원칙
-세 렌즈 다 **명확한 것만 잡고 과설계·노이즈는 침묵**하도록 실측 튜닝됨. 이 오케스트레이터도 같은 정신: 커버리지를 위해 억지로 채우지 말 것.
+네 렌즈 다 **명확한 것만 잡고 과설계·노이즈는 침묵**하도록 실측 튜닝됨. 이 오케스트레이터도 같은 정신: 커버리지를 위해 억지로 채우지 말 것.
 
 ## 회귀 하네스
 동봉 `regression/` (fixtures 10 + ANSWER-KEY + README). 어느 렌즈의 게이트·목록을 고칠 때마다 이 A/B로 오탐/커버리지 회귀를 재검증한다. 절차는 `regression/README.md`.
