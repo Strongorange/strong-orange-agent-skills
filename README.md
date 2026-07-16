@@ -34,6 +34,7 @@ npx skills add Strongorange/strong-orange-agent-skills --list
 - review-comments
 - review-tests
 - review-solid
+- review-acid
 - review-all
 - skill-creator
 - skill-installer
