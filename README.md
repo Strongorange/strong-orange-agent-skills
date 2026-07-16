@@ -31,5 +31,9 @@ npx skills add Strongorange/strong-orange-agent-skills --list
 - strategy-template-governor
 - ts-web-tdd-orchestrator
 - toolditor-readable-commits
+- review-comments
+- review-tests
+- review-solid
+- review-all
 - skill-creator
 - skill-installer
