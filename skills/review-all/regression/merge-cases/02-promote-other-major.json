@@ -1,0 +1,38 @@
+[
+  {
+    "f": "orderApi.ts",
+    "L": "comment",
+    "overallLevel": "medium",
+    "primary": [
+      {
+        "location": "orderApi.ts:8",
+        "issue": "`// 주문을 생성한다` — 함수명이 createOrder라 코드를 그대로 반복",
+        "severity": "nit",
+        "suggestion": "제거"
+      }
+    ],
+    "other": []
+  },
+  {
+    "f": "orderApi.ts",
+    "L": "solid",
+    "overallLevel": "high",
+    "primary": [
+      {
+        "location": "orderApi.ts:14",
+        "issue": "불리언 인자가 시그니처에 나열됨",
+        "severity": "nit",
+        "signal": "불리언 파라미터",
+        "suggestion": "옵션 객체로"
+      }
+    ],
+    "other": [
+      {
+        "location": "orderApi.ts:42",
+        "issue": "await 없이 반환된 Promise를 무시해 실패가 삼켜진다",
+        "severity": "major",
+        "suggestion": "await 추가 후 실패 처리"
+      }
+    ]
+  }
+]

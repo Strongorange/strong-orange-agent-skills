@@ -1,0 +1,8 @@
+[
+  { "f": "slugify.ts", "L": "comment", "overallLevel": "high", "primary": [], "other": [] },
+  { "f": "slugify.ts", "L": "solid", "overallLevel": "high", "primary": [], "other": [] },
+  { "f": "label.ts", "L": "comment", "overallLevel": "high", "primary": [], "other": [] },
+  { "f": "label.ts", "L": "solid", "overallLevel": "high", "primary": [], "other": [] },
+  { "f": "cart.test.ts", "L": "test", "overallLevel": "high", "primary": [], "other": [] },
+  { "f": "cart.test.ts", "L": "comment", "overallLevel": "high", "primary": [], "other": [] }
+]

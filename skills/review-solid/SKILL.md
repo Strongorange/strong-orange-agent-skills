@@ -7,9 +7,17 @@ description: Review design for SOLID and clean-code signals using an evidence-ga
 
 책임 경계·이름·의존성·추상화를 본다. **evidence-gated** — 관찰된 신호 없이는 침묵한다. 원문 자체가 "기계적으로 쫓지 말라"고 반복하므로, 이 렌즈의 핵심은 지적 못지않게 **지적을 참는 것**이다. (실측: 상 수준 코드에 "인터페이스 뽑아라/전략패턴/쪼개라" 오탐 0.)
 
+> **원문**: 이 스킬 디렉토리의 `references/guide.md` (동봉 — 외부 경로 의존 없음)
+> 아래 목록은 그 문서의 압축본이다. 원칙별 절(SRP·OCP·LSP·ISP·DIP)과 클린코드 절이 있고, "조건문이 항상 나쁜 것은 아니다"·"과도하게 분리한 예" 같은 **반대 방향 절**이 지적 금지의 근거다. **판단이 애매하면 해당 절을 직접 읽고 결정한다.**
+
 ## 실행
 
-1. **대상 결정**: 인자 파일, 없으면 `git diff` 변경 파일.
+1. **대상 결정**: 인자 파일, 없으면 `git diff` 변경 파일. **기본 브랜치를 `main`으로 하드코딩하지 말 것** — 레포마다 다르다(`dev`·`master`·`trunk` 등).
+   ```bash
+   git diff --name-only --diff-filter=d HEAD             # staged + unstaged (--diff-filter=d: 삭제 파일 제외)
+   BASE=$(git symbolic-ref -q --short refs/remotes/origin/HEAD || echo origin/main)
+   git diff --name-only --diff-filter=d "$BASE...HEAD"   # 브랜치 변경분
+   ```
 2. 각 파일에 **3단 게이트** 적용.
 3. `primary`(설계) / `other`(정확성·안정성) 분리 보고. 각 finding에 관찰한 `signal`을 명시.
 
@@ -46,8 +54,11 @@ description: Review design for SOLID and clean-code signals using an evidence-ga
 
 ## 출력 계약
 각 finding: `{ location, issue, severity, signal, suggestion }`
-- `primary`: 신호 인용되는 지적만(강=major+, 약=nit) / `other`: 정확성·안정성 / `overallLevel`: 설계 품질
+- `primary`: 신호 인용되는 지적만(강=major+, 약=nit) / `other`: 정확성·안정성 / `overallLevel`: 설계 **품질**(high=좋음 … low=나쁨, 심각도 아님)
 - 없으면 빈 배열.
+
+**severity 기준 (4렌즈 공통 — 병합 시 이 값으로 정렬하므로 벗어나지 말 것)**
+`blocker` 데이터 손상·보안·머지 불가 / `major` 릴리스 전 고쳐야 함 / `minor` 고치면 좋음 / `nit` 취향·비강제. 강신호=major+, 약신호=nit 매핑이 이 기준보다 우선한다.
 
 ## 검증됨 (v1.1)
 solid-bad 강신호 3/3, solid-medium 약신호 2/2(불리언·ORM누수 nit), solid-good/good2 하드 함정 오탐 0·값객체 노이즈 0. review-all 동봉 `regression/` 참조.

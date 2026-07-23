@@ -1,0 +1,38 @@
+[
+  {
+    "f": "clean.ts",
+    "L": "solid",
+    "overallLevel": "high",
+    "primary": [],
+    "other": []
+  },
+  {
+    "f": "messy.ts",
+    "L": "solid",
+    "overallLevel": "low",
+    "primary": [
+      {
+        "location": "messy.ts:20",
+        "issue": "DB 조회·할인 정책·메일 발송이 한 메서드에 인라인으로 섞여 변경 이유가 복수",
+        "severity": "major",
+        "signal": "SRP — 정책과 IO를 직접 수행",
+        "suggestion": "정책 계산과 발송을 협력객체로 분리"
+      }
+    ],
+    "other": []
+  },
+  {
+    "f": "messy.ts",
+    "L": "comment",
+    "overallLevel": "medium",
+    "primary": [
+      {
+        "location": "messy.ts:31",
+        "issue": "`// 30일` — 숫자 의미만 반복하고 왜 30일인지 없음",
+        "severity": "minor",
+        "suggestion": "정책 근거나 티켓 번호를 남길 것"
+      }
+    ],
+    "other": []
+  }
+]

@@ -1,0 +1,45 @@
+[
+  {
+    "f": "billing.ts",
+    "L": "acid",
+    "overallLevel": "low",
+    "primary": [
+      {
+        "location": "billing.ts:70",
+        "issue": "트랜잭션 범위가 정합성에 불필요한 로그 적재까지 포함",
+        "severity": "nit",
+        "signal": "범위 과대",
+        "suggestion": "로그는 트랜잭션 밖으로"
+      },
+      {
+        "location": "billing.ts:12",
+        "issue": "출금과 입금이 한 트랜잭션 밖에서 따로 실행되어 중간 장애 시 돈이 증발한다",
+        "severity": "blocker",
+        "signal": "원자성 분리",
+        "suggestion": "두 쓰기를 한 트랜잭션으로"
+      },
+      {
+        "location": "billing.ts:55",
+        "issue": "재시도 가능한 외부 승인 호출에 idempotency key가 없다",
+        "severity": "minor",
+        "signal": "멱등성 부재",
+        "suggestion": "요청 단위 키 부여"
+      },
+      {
+        "location": "billing.ts:33",
+        "issue": "조회 후 계산해 저장하는 read-modify-write라 동시 요청에서 갱신이 유실된다",
+        "severity": "major",
+        "signal": "Lost Update",
+        "suggestion": "조건부 UPDATE로 원자화"
+      }
+    ],
+    "other": [
+      {
+        "location": "billing.ts:88",
+        "issue": "환율 상수가 하드코딩되어 있다",
+        "severity": "major",
+        "suggestion": "설정으로 분리"
+      }
+    ]
+  }
+]

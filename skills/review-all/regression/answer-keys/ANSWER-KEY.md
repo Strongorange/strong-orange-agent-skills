@@ -1,5 +1,8 @@
 # Answer Key (에이전트에게 절대 노출 X)
 
+> 픽스처는 `~/.agents/skills/review-all/regression/fixtures/`, 정답지만 여기(스킬 트리 밖)에 둔다 — 리뷰어 서브에이전트가 디렉토리를 훑다가 답을 보면 측정이 무의미해지기 때문. 절차는 `regression/README.md`.
+> acid 도메인은 `acid-ANSWER-KEY.md` 참조.
+
 채점 축:
 - **Recall**: 심은 진짜 결함을 잡았나
 - **FP(오탐)**: 상 수준 코드의 "괜찮은 것"을 지적했나 (기계적 적용 지표)
@@ -66,3 +69,12 @@
    **함정**: "DIP 위해 인터페이스 뽑아라"(강제 시 문서역행)
 - 허용 catch(FP 아님): `orderStatusLabel` default 없음 → exhaustiveness 지적은 정당한 minor.
 - 기대: 진짜 findings 거의 없음.
+
+## solid-good2 (상) — 진짜 결함 ~0, 함정 3
+1. `slugify`·`shippingFee`: 안정적 순수 유틸. 문서 "안정적 순수 유틸·언어 기본기능 래핑 요구 금지".
+   **함정**: "유틸을 인터페이스/서비스로 감싸라", "shippingFee 금액을 값 객체로"
+2. `shippingFee`의 `'STANDARD'|'EXPRESS'` 삼항: 닫힌 유니온 소수 분기 = 문서가 명시적으로 OK 한 케이스.
+   **함정**: "전략 패턴 써라/OCP 위반"
+3. `CheckoutUseCase.execute`: 협력객체 5개(cart·inventory·payment·orders·receipts) 생성자 주입 + 순차 호출 = 유스케이스 조율, 올바른 SRP. 포트 인터페이스로 이미 DIP 충족.
+   **함정**: "생성자 인자가 많다/쪼개라", "너무 많은 일을 한다"
+- 기대: primary 빈 배열. (solid-good보다 "인자 수" 함정이 강해 과열 리뷰어를 거른다)
