@@ -7,9 +7,17 @@ description: Review test code for weak/meaningless assertions, over-mocking, and
 
 테스트의 **검증 품질만** 평가한다. 테스트 대상 코드(SUT)의 로직 버그는 `other` 버킷.
 
+> **원문**: 이 스킬 디렉토리의 `references/guide.md` (동봉 — 외부 경로 의존 없음)
+> 아래 목록은 그 문서의 압축본이고, `§N`은 원문의 절 번호(§1 미검증 테스트, §2 구현 디테일, §3 과잉 모킹, §4 호출여부 검증, §5 약한 검증, §7 비동기 미대기, §8 기대값 자기복제, §10 거대 스냅샷)다. **판단이 애매하면 해당 절을 직접 읽고 결정한다.**
+
 ## 실행
 
-1. **대상 결정**: 인자로 주어진 테스트 파일, 없으면 `git diff` 변경 파일 중 테스트(`*.test.ts`, `*.spec.ts`, `__tests__/` 등).
+1. **대상 결정**: 인자로 주어진 테스트 파일, 없으면 `git diff` 변경 파일 중 테스트(`*.test.ts`, `*.spec.ts`, `__tests__/` 등). **기본 브랜치를 `main`으로 하드코딩하지 말 것** — 레포마다 다르다(`dev`·`master`·`trunk` 등).
+   ```bash
+   git diff --name-only --diff-filter=d HEAD             # staged + unstaged (--diff-filter=d: 삭제 파일 제외)
+   BASE=$(git symbolic-ref -q --short refs/remotes/origin/HEAD || echo origin/main)
+   git diff --name-only --diff-filter=d "$BASE...HEAD"   # 브랜치 변경분
+   ```
 2. 각 파일에 아래 **게이트**·목록 적용.
 3. `primary`(테스트 품질) / `other`(SUT 로직 등) 분리 보고.
 
@@ -37,8 +45,11 @@ description: Review test code for weak/meaningless assertions, over-mocking, and
 
 ## 출력 계약
 각 finding: `{ location, issue, severity, suggestion }`
-- `primary`: 위 지적 대상만 / `other`: SUT 로직 등 / `overallLevel`: 테스트 품질 high|medium|low
+- `primary`: 위 지적 대상만 / `other`: SUT 로직 등 / `overallLevel`: 테스트 **품질**(high=좋음 … low=나쁨, 심각도 아님)
 - 없으면 빈 배열.
+
+**severity 기준 (4렌즈 공통 — 병합 시 이 값으로 정렬하므로 벗어나지 말 것)**
+`blocker` 데이터 손상·보안·머지 불가 / `major` 릴리스 전 고쳐야 함 / `minor` 고치면 좋음 / `nit` 취향·비강제
 
 ## 검증됨
 test-good(실 도메인객체·정당한 메일 발송 검증)에서 오탐 0, test-bad 4/4·test-medium 2/2 잡음. review-all 동봉 `regression/` 참조.

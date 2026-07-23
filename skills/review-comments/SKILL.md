@@ -7,11 +7,19 @@ description: Review code comments for redundancy, staleness, and missing rationa
 
 주석 **품질만** 평가하는 단일 렌즈 리뷰. 맨몸 리뷰어가 자연히 건너뛰는 관심사라, 이 렌즈의 가치는 "누락된 주석 렌즈를 강제"하는 것이다.
 
+> **원문**: 이 스킬 디렉토리의 `references/guide.md` (동봉 — 외부 경로 의존 없음)
+> 아래 목록은 그 문서의 압축본이고, `§N`은 원문의 절 번호(§1 동작 서술, §10 TODO, §11 예외 무시, §12 타입단언·린트, §13 변경이력, §14 죽은 코드)다. **판단이 애매하면 해당 절을 직접 읽고 결정한다.**
+
 ## 실행
 
 1. **대상 결정**
    - 인자로 파일/경로가 주어지면 그 파일들.
-   - 없으면 `git diff`(uncommitted + 현재 브랜치 vs main)의 변경 파일. `git diff --name-only main...HEAD` + `git diff --name-only`로 목록을 잡고, 변경 hunk 위주로 본다.
+   - 없으면 `git diff` 변경 파일. **기본 브랜치를 `main`으로 하드코딩하지 말 것** — 레포마다 다르다(`dev`·`master`·`trunk` 등). 변경 hunk 위주로 본다.
+     ```bash
+     git diff --name-only --diff-filter=d HEAD             # staged + unstaged (--diff-filter=d: 삭제 파일 제외)
+     BASE=$(git symbolic-ref -q --short refs/remotes/origin/HEAD || echo origin/main)
+     git diff --name-only --diff-filter=d "$BASE...HEAD"   # 브랜치 변경분
+     ```
 2. 각 대상 파일에 아래 **게이트**와 **지적/금지 목록**을 그대로 적용한다.
 3. 결과를 `primary`(주석 findings)와 `other`(주석 외 정당한 지적, 낮은 우선순위)로 분리해 보고한다.
 
@@ -40,8 +48,11 @@ description: Review code comments for redundancy, staleness, and missing rationa
 각 finding: `{ location, issue(무엇이 왜), severity(blocker|major|minor|nit), suggestion }`
 - `primary`: 위 지적 대상만
 - `other`: 주석 외 눈에 띈 정당한 지적(로직·설계). 낮은 우선순위, 억지로 채우지 말 것
-- `overallLevel`: 주석 품질 기준 high/medium/low
+- `overallLevel`: 주석 **품질**(high=좋음 … low=나쁨). 심각도가 아니다.
 - 지적할 게 없으면 빈 배열. 없는 게 정상이다.
 
+**severity 기준 (4렌즈 공통 — 병합 시 이 값으로 정렬하므로 벗어나지 말 것)**
+`blocker` 데이터 손상·보안·머지 불가 / `major` 릴리스 전 고쳐야 함 / `minor` 고치면 좋음 / `nit` 취향·비강제
+
 ## 검증됨
-comment-good 픽스처(정당한 WHY·티켓·eslint 주석)에서 오탐 0, comment-medium(맨몸 리뷰어가 0/2로 놓친 중복·매직 주석)에서 3/3 회복. 회귀 재검증은 review-all 동봉 `regression/`(fixtures + ANSWER-KEY) 참조.
+comment-good 픽스처(정당한 WHY·티켓·eslint 주석)에서 오탐 0, comment-medium(맨몸 리뷰어가 0/2로 놓친 중복·매직 주석)에서 3/3 회복. 회귀 재검증 절차는 review-all 동봉 `regression/README.md` 참조.

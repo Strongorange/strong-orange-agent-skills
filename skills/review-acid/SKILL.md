@@ -7,9 +7,17 @@ description: Review transaction, concurrency, and data-integrity design (ACID) u
 
 트랜잭션 경계·동시성·멱등성·DB와 외부 시스템 정합성을 본다. **evidence-gated** — 관찰된 위험 패턴 없이는 침묵. 원문이 "모든 메서드에 트랜잭션 / 항상 최고 격리 / 분산 락 남용"을 경고하므로, 지적만큼 **참는 것**이 중요하다.
 
+> **원문**: 이 스킬 디렉토리의 `references/guide.md` (동봉 — 외부 경로 의존 없음)
+> 아래 목록은 그 문서의 압축본이다. ACID 각 축(Atomicity·Consistency·Isolation·Durability) 절과 "트랜잭션 범위가 너무 작은/큰 경우", "비즈니스 작업과 DB 트랜잭션은 다르다" 절이 지적·지적금지의 근거다. **판단이 애매하면 해당 절을 직접 읽고 결정한다.**
+
 ## 실행
 
-1. **대상 결정**: 인자 파일, 없으면 `git diff` 변경 파일 중 DB 쓰기·트랜잭션·외부 연동이 있는 것.
+1. **대상 결정**: 인자 파일, 없으면 `git diff` 변경 파일 중 **DB 쓰기·트랜잭션·외부 연동이 있는 것만**(없는 파일은 아예 대상에서 뺀다). **기본 브랜치를 `main`으로 하드코딩하지 말 것** — 레포마다 다르다(`dev`·`master`·`trunk` 등).
+   ```bash
+   git diff --name-only --diff-filter=d HEAD             # staged + unstaged (--diff-filter=d: 삭제 파일 제외)
+   BASE=$(git symbolic-ref -q --short refs/remotes/origin/HEAD || echo origin/main)
+   git diff --name-only --diff-filter=d "$BASE...HEAD"   # 브랜치 변경분
+   ```
 2. 각 파일에 **게이트** 적용. 스키마·불변조건이 발췌에 없으면 단정 대신 그 사실을 issue에 명시(컨텍스트-갭은 blocker가 아니라 낮은 severity로).
 3. `primary`(트랜잭션 findings) / `other`(순수 로직) 분리, 각 finding에 관찰한 `signal` 명시.
 
@@ -47,8 +55,11 @@ description: Review transaction, concurrency, and data-integrity design (ACID) u
 
 ## 출력 계약
 각 finding: `{ location, issue, severity, signal, suggestion }`
-- `primary`: 위 지적 대상만 / `other`: 순수 로직·설계 / `overallLevel`: **트랜잭션 안전성** high|medium|low
+- `primary`: 위 지적 대상만 / `other`: 순수 로직·설계 / `overallLevel`: **트랜잭션 안전성**(high=안전 … low=위험, 심각도 아님)
 - 없으면 빈 배열.
+
+**severity 기준 (4렌즈 공통 — 병합 시 이 값으로 정렬하므로 벗어나지 말 것)**
+`blocker` 데이터 손상·보안·머지 불가 / `major` 릴리스 전 고쳐야 함 / `minor` 고치면 좋음 / `nit` 취향·비강제. 스키마·불변조건을 못 본 컨텍스트-갭 지적은 blocker 금지(minor 이하).
 
 ## 검증됨
 acid-bad 4/4·acid-medium 2/2(lost update·앱검증-only), acid-good/good2 하드 함정("트랜잭션 감싸/락 추가/독립작업 묶어") 오탐 0. baseline이 overallLevel을 역전(bad=high)한 걸 렌즈가 교정(bad=low). 회귀는 review-all 동봉 `regression/` 참조.
