@@ -11,7 +11,7 @@ Run a single scripted verification against the local dev stack to confirm: API a
 ## Quick Start (Workflow)
 1. Ensure the dev stack is up: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
 2. From the repo root, run:
-   - `./.codex/skills/scaffold-dev-verify/scripts/verify_flows.sh`
+   - `scripts/verify_flows.sh`
 3. Confirm output:
    - Referral code printed
    - Notification GET/PUT shows `true` then `false`
