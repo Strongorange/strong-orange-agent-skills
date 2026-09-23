@@ -93,12 +93,37 @@ def problems(path, text):
     return list(dict.fromkeys(found))
 
 
-def new_text(tool_input):
+PATCH_FILE = re.compile(r"^\*\*\* (?:Add|Update) File: (.+)$|^\*\*\* Move to: (.+)$")
+
+
+def patch_files(patch):
+    """apply_patch 본문(Codex 의 tool_input.command)을 파일별 추가 줄로 나눔."""
+    files, current = {}, None
+    for line in patch.splitlines():
+        m = PATCH_FILE.match(line)
+        if m:
+            current = (m.group(1) or m.group(2)).strip()
+            files.setdefault(current, [])
+        elif line.startswith("*** "):
+            current = None
+        elif current and line.startswith("+"):
+            files[current].append(line[1:])
+    return [(path, "\n".join(lines)) for path, lines in files.items()]
+
+
+def targets(data):
+    """검사할 (파일 경로, 새로 들어갈 내용) 목록."""
+    tool_input = data.get("tool_input", {})
+    if data.get("tool_name") == "apply_patch":
+        cwd = data.get("cwd", "")
+        return [(os.path.join(cwd, p), t) for p, t in patch_files(tool_input.get("command", ""))]
     if "content" in tool_input:
-        return tool_input["content"]
-    if "edits" in tool_input:
-        return "\n".join(e.get("new_string", "") for e in tool_input["edits"])
-    return tool_input.get("new_string", "")
+        text = tool_input["content"]
+    elif "edits" in tool_input:
+        text = "\n".join(e.get("new_string", "") for e in tool_input["edits"])
+    else:
+        text = tool_input.get("new_string", "")
+    return [(tool_input.get("file_path", ""), text)]
 
 
 def self_test():
@@ -114,6 +139,10 @@ def self_test():
     ok &= problems(os.path.expanduser("~/.claude/rules/x.md"), "게이트") == []
     ok &= problems(os.path.join(os.path.dirname(HERE), "rules.md"), "게이트") == []
     ok &= problems("/x/a.json", "배선") == []
+    patch = "*** Begin Patch\n*** Add File: a.py\n+# 값을 저장한다\n+x = 1\n*** Update File: b.md\n@@\n-옛 줄\n+새 줄\n*** End Patch"
+    got = targets({"tool_name": "apply_patch", "cwd": "/x", "tool_input": {"command": patch}})
+    ok &= got == [("/x/a.py", "# 값을 저장한다\nx = 1"), ("/x/b.md", "새 줄")]
+    ok &= bool([f for p, t in got for f in problems(p, t)])
     print("self-test", "ok" if ok else "FAIL")
     return 0 if ok else 1
 
@@ -125,8 +154,7 @@ def main():
         data = json.load(sys.stdin)
     except ValueError:
         sys.exit(0)
-    tool_input = data.get("tool_input", {})
-    found = problems(tool_input.get("file_path", ""), new_text(tool_input))
+    found = [f for path, text in targets(data) for f in problems(path, text)]
     if not found:
         sys.exit(0)
     print(

@@ -22,7 +22,7 @@ def cmd(script):
 
 
 def backup(path):
-    dst = os.path.join(HOME, ".claude", "backups", "tone-fix", STAMP)
+    dst = os.path.join(HOME, ".local", "state", "tone-fix", "backups", STAMP)
     os.makedirs(dst, exist_ok=True)
     shutil.copy2(path, dst)
 
@@ -70,24 +70,12 @@ def ours(command):
     return any(s in command for s in HOOK_SCRIPTS) and ("tone-fix" in command or "/.claude/hooks/" in command)
 
 
-def claude():
-    base = os.path.join(HOME, ".claude")
-    if not os.path.isdir(base):
-        return
-    link(os.path.join(base, "rules", "korean-writing.md"), os.path.join(SKILL, "rules.md"))
-    link(os.path.join(base, "skills", "tone-fix"), SKILL)
-
-    path = os.path.join(base, "settings.json")
+def merge_hooks(path, wanted, prune):
+    """wanted = {(이벤트, matcher, 명령)}. 없는 것만 각 이벤트 끝에 붙임.
+    prune 이면 wanted 에 없는 우리 옛 등록(예전 경로 · 바뀐 matcher)을 걷어 냄."""
     data = load_json(path)
     before = json.loads(json.dumps(data))
     hooks = data.setdefault("hooks", {})
-    wanted = {
-        ("Stop", None, cmd("response-lint.py")),
-        ("SubagentStop", None, cmd("response-lint.py")),
-        ("PreToolUse", "Bash", cmd("commit-pr-lint.py")),
-        ("PreToolUse", "Write|Edit", cmd("comment-lint.py")),
-    }
-    # 예전 위치(~/.claude/hooks) 등록과 matcher 가 바뀐 옛 등록은 걷어 냄
     have = set()
     for event, groups in list(hooks.items()):
         kept = []
@@ -95,25 +83,75 @@ def claude():
             inner = []
             for h in g.get("hooks", []):
                 key = (event, g.get("matcher"), h.get("command", ""))
-                if ours(key[2]) and key not in wanted:
+                if prune and ours(key[2]) and key not in wanted:
                     continue
                 have.add(key)
                 inner.append(h)
             if inner:
                 kept.append({**g, "hooks": inner})
         hooks[event] = kept
-    for event, matcher, command in sorted(wanted - have, key=str):
+    added = sorted(wanted - have, key=str)
+    for event, matcher, command in added:
         group = {"hooks": [{"type": "command", "command": command}]}
         if matcher:
             group = {"matcher": matcher, **group}
         hooks.setdefault(event, []).append(group)
     save_json(path, data, before)
+    return added
+
+
+def claude():
+    base = os.path.join(HOME, ".claude")
+    if not os.path.isdir(base):
+        return
+    link(os.path.join(base, "rules", "korean-writing.md"), os.path.join(SKILL, "rules.md"))
+    link(os.path.join(base, "skills", "tone-fix"), SKILL)
+    merge_hooks(os.path.join(base, "settings.json"), {
+        ("Stop", None, cmd("response-lint.py")),
+        ("SubagentStop", None, cmd("response-lint.py")),
+        ("PreToolUse", "Bash", cmd("commit-pr-lint.py")),
+        ("PreToolUse", "Write|Edit", cmd("comment-lint.py")),
+    }, prune=True)
+
+
+BEGIN, END = "<!-- tone-fix:begin -->", "<!-- tone-fix:end -->"
+
+
+def codex():
+    base = os.path.join(HOME, ".codex")
+    if not os.path.isdir(base):
+        return
+    # Codex 전역 AGENTS.md 는 다른 파일을 불러오지 못해 본문을 복사. 표시 사이만 갈아 끼움.
+    path = os.path.join(base, "AGENTS.md")
+    old = open(path, encoding="utf-8").read() if os.path.exists(path) else ""
+    block = f"{BEGIN}\n{open(os.path.join(SKILL, 'rules.md'), encoding='utf-8').read().strip()}\n{END}"
+    if BEGIN in old and END in old:
+        new = old[:old.index(BEGIN)] + block + old[old.index(END) + len(END):]
+    else:
+        new = old.rstrip("\n") + ("\n\n" if old.strip() else "") + block + "\n"
+    if new != old:
+        print(f"규칙 블록: {tilde(path)}")
+        if not CHECK:
+            if old:
+                backup(path)
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(new)
+    # Codex 는 hook 승인을 파일 안 순서로 기억해서, 옛 등록을 걷어 내면 뒤쪽 승인이 풀림
+    added = merge_hooks(os.path.join(base, "hooks.json"), {
+        ("Stop", None, cmd("response-lint.py")),
+        ("SubagentStop", None, cmd("response-lint.py")),
+        ("PreToolUse", "^Bash$", cmd("commit-pr-lint.py")),
+        ("PreToolUse", "^apply_patch$", cmd("comment-lint.py")),
+    }, prune=False)
+    if added and not CHECK:
+        print(f"Codex: 새 hook {len(added)}개. codex 를 켜서 /hooks 에서 승인해야 돎(codex exec 는 승인 전 hook 을 조용히 건너뜀).")
 
 
 def main():
     if not shutil.which("python3"):
         sys.exit("python3 가 PATH 에 없음. hook 이 조용히 실패하니 먼저 설치.")
     claude()
+    codex()
     print("완료" if not CHECK else "확인만 함(--check)")
 
 
