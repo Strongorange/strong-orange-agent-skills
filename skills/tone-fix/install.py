@@ -147,11 +147,25 @@ def codex():
         print(f"Codex: 새 hook {len(added)}개. codex 를 켜서 /hooks 에서 승인해야 돎(codex exec 는 승인 전 hook 을 조용히 건너뜀).")
 
 
+def opencode():
+    base = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"), "opencode")
+    if not os.path.isdir(base):
+        return
+    link(os.path.join(base, "plugins", "tone-fix.js"), os.path.join(SKILL, "adapters", "opencode.js"))
+    # 전역 AGENTS.md 가 있으면 OpenCode 는 ~/.claude/CLAUDE.md 를 대신 읽지 않음
+    agents = os.path.join(base, "AGENTS.md")
+    if os.path.isfile(agents) and not os.path.islink(agents):
+        print(f"건너뜀: {tilde(agents)} 가 이미 있음. 규칙을 넣으려면 opencode.json 의 instructions 에 {tilde(os.path.join(SKILL, 'rules.md'))} 추가.")
+        return
+    link(agents, os.path.join(SKILL, "rules.md"))
+
+
 def main():
     if not shutil.which("python3"):
         sys.exit("python3 가 PATH 에 없음. hook 이 조용히 실패하니 먼저 설치.")
     claude()
     codex()
+    opencode()
     print("완료" if not CHECK else "확인만 함(--check)")
 
 
