@@ -46,5 +46,6 @@ Use when the personal repo has not been synced for a while.
 - `.gitignore` does not untrack files committed earlier. The scan reports them as "tracked but gitignored"; remove them with `git rm --cached`.
 - The usage log covers Claude Code only, and only since it was created. Zero hits does not prove a skill is unused in Codex or Cursor, so ask before deleting. A skill name in Codex session logs is the injected skill list, not usage.
 - A second copy or link under `~/.codex/skills` or `~/.cursor/skills` makes Codex list the skill twice. During a repo sync, report such runtime drift and leave fixing it to a separate request.
+- Codex `~/.codex/config.toml` enables or disables skills by exact `SKILL.md` path (`[[skills.config]]`). Moving or unlinking a skill silently re-enables it under the new path, so rewrite those paths too. A disabled skill cannot be called even explicitly.
 - Publish copies that were made generic differ from the local source on purpose. A hash mismatch on those is expected.
 - If sensitive content already reached a pushed commit, follow [references/history-purge.md](references/history-purge.md). It is the only case that allows force push.
