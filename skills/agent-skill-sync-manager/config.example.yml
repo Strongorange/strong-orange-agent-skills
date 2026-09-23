@@ -1,0 +1,13 @@
+team_repo: ~/github/<team>-agent-skills
+personal_repo: ~/github/<you>-agent-skills
+personal_remote: git@<ssh-host-alias>:<you>/<you>-agent-skills.git
+personal_email: you@example.com
+usage_log: ~/.claude/<skill-usage>.log
+# Publish copies made generic on purpose; a diff against the local source is expected.
+generic_copies:
+  - <skill>
+# One extended regex per item, matched case-insensitively.
+sensitive_patterns:
+  - <company-name>
+  - <company-email-domain>
+  - <company-repo-or-host>

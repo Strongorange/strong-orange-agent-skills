@@ -1,0 +1,5 @@
+interface:
+  display_name: "Agent Skill Sync Manager"
+  short_description: "Sync local skills to runtimes and publish repos"
+policy:
+  allow_implicit_invocation: false

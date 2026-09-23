@@ -1,187 +1,50 @@
 ---
 name: agent-skill-sync-manager
-description: |
-  Manage local and publishable Agent Skills across this machine. Use when the user asks to register, install, sync, publish, mirror, push, or verify skills across ~/.agents/skills, Claude Code, Cursor, Codex, team skill repo, or Strongorange personal skill repo. Treat ~/.agents/skills as the working source of truth, create agent-specific symlinks, compare hashes before overwriting, and only commit or push after explicit user request or confirmation.
+description: Syncs Agent Skills between the local working source (~/.agents/skills), agent runtime folders, and the team/personal publish repos, and audits the personal repo for company content. Use only when the user explicitly asks to register, sync, publish, or push skills.
+disable-model-invocation: true
 ---
 
 # Agent Skill Sync Manager
 
-This skill manages the local skill workspace and the two publish repositories used on this machine.
+Read `config.local.yml` in this skill folder first: repo paths, personal remote, usage log, sensitive patterns. If it is missing, copy `config.example.yml`, ask the user for the values, and save it.
 
-The working entrypoint is `~/.agents/skills`. Agent runtimes should read skills through symlinks from their own discovery paths.
+## Layout
 
-## Known Locations
+- Working source: `~/.agents/skills/<skill>`. Edit skills here.
+- Codex and Cursor read `~/.agents/skills` directly. Only Claude Code needs a link: `~/.claude/skills/<skill>` -> `../../.agents/skills/<skill>`.
+- Publish repos keep `skills/<skill>/` and a README skill list that must match the folder.
 
-| Purpose | Path |
+## Where a skill may go
+
+Resolve the source with `readlink -f` first, then check top to bottom. The first matching row wins.
+
+| Skill | Destination |
 |---|---|
-| Working source | `~/.agents/skills` |
-| Claude Code skills | `~/.claude/skills` |
-| Cursor skills | `~/.cursor/skills` |
-| Codex skills | `~/.codex/skills` |
-| Team repo | `~/github/<team>-agent-skills` |
-| Strongorange personal repo | `~/github/strong-orange-agent-skills` |
+| Third-party: in `~/.agents/.skill-lock.json`, a link to someone else's repo, or a bundled `.system` skill | Nowhere. Reinstall from its source instead |
+| Source lives in a company repo | Team repo only, unless the user approves a personal copy. If it is tracked in a company product repo, change it there by PR |
+| Only works with company infra or vault | Team repo only |
+| Anything else | Personal repo |
 
-OpenCode is not locked yet. If the user mentions OpenCode, discover its current skill path before changing anything.
+A personal skill that only mentions company paths as examples can still go to the personal repo: publish a copy with generic placeholders, keep the local source as is, and add the skill to `generic_copies` in config.
 
-## Operating Model
+## Full audit
 
-- Treat `~/.agents/skills/<skill>` as the working source.
-- If that entry is a symlink, resolve it and report the real origin before syncing.
-- Prefer runtime symlinks in this shape: `../../.agents/skills/<skill>`.
-- Do not overwrite, delete, or replace existing skills without showing diff or hash comparison first.
-- Do not commit or push unless the user explicitly asked for it or confirmed after review.
-- Never force push. Never use destructive git commands.
+Use when the personal repo has not been synced for a while.
 
-## Workflow
+1. Compare every `skills/<skill>` in the repo with its resolved source (`diff -rq -x config.local.yml -x __pycache__`). List working-source skills missing from the repo.
+2. Decide per skill: update, add, or remove. For a skill in `generic_copies`, read the diff: a change only in the placeholder spots is expected, anything else is a real update to port by hand.
+3. Copy without `config.local.yml` and `__pycache__`.
+4. Run `scripts/scan-sensitive.sh <repo> --history`. It must print `clean` before any commit.
+5. Sync the README list with `skills/`, following the README's existing order and style. Commit per change type in the repo's existing message style (`git log -5`). Push only when the user asked.
 
-### Step 1: Identify the Skill
+## Gotchas
 
-Determine the skill name from the user request or path.
-
-Check:
-
-```bash
-ls -ld ~/.agents/skills/<skill>
-test -f ~/.agents/skills/<skill>/SKILL.md
-```
-
-Read `SKILL.md` and verify:
-
-- frontmatter exists
-- `name` equals the directory name
-- `description` is non-empty and trigger-oriented
-- `SKILL.md` is under 500 lines unless there is a strong reason
-
-### Step 2: Resolve Origin
-
-Classify the working entry:
-
-| Entry type | Action |
-|---|---|
-| Normal directory | Treat as local working source |
-| Symlink to a repo skill | Treat target repo path as origin; avoid blind copy back |
-| Symlink to project-local skill | Ask before publishing outside the project |
-| Missing | Stop and ask whether to create or install it |
-
-Report the resolved origin before syncing to repos.
-
-### Step 3: Choose Targets
-
-If the user did not specify targets, ask where to sync:
-
-- `local only`: `~/.agents/skills` plus runtime symlinks
-- `team repo`: `~/github/<team>-agent-skills`
-- `personal repo`: `~/github/strong-orange-agent-skills`
-- `both repos`: both publish repositories
-
-Defaults:
-
-- Company/project/team workflow skills -> team repo
-- personal workflow, generic utility, experimental skills -> personal repo
-- user says “team and personal both” -> both repos
-
-### Step 4: Sync Runtime Symlinks
-
-For each runtime path that should recognize the skill:
-
-```bash
-ln -s ../../.agents/skills/<skill> ~/.claude/skills/<skill>
-ln -s ../../.agents/skills/<skill> ~/.cursor/skills/<skill>
-ln -s ../../.agents/skills/<skill> ~/.codex/skills/<skill>
-```
-
-Before creating a link:
-
-- If the path does not exist, create the symlink.
-- If it already points to the same resolved target, leave it.
-- If it points elsewhere, report it and ask before replacing.
-- If it is a real directory, do not replace it automatically.
-
-### Step 5: Sync Publish Repos
-
-Publish repo layout:
-
-```text
-skills/<skill>/SKILL.md
-skills/<skill>/references/
-skills/<skill>/scripts/
-skills/<skill>/agents/openai.yaml
-```
-
-Copy the whole skill directory when supporting files exist. At minimum, copy `SKILL.md`.
-
-Update README included-skills list:
-
-- Team repo uses backticks: ``- `<skill>` ``
-- Strongorange repo uses plain bullets: `- <skill>`
-- Preserve the existing README style and ordering as much as possible.
-
-Compare source and destination:
-
-```bash
-sha256sum ~/.agents/skills/<skill>/SKILL.md \
-  <repo>/skills/<skill>/SKILL.md
-```
-
-For supporting files, compare file lists and hashes as needed.
-
-### Step 6: Review Before Commit
-
-Before committing, run in each touched repo:
-
-```bash
-git status --short
-git diff --stat
-git diff
-git log -5 --oneline
-```
-
-Review for:
-
-- unrelated dirty files
-- accidentally included secrets or environment files
-- README mismatch
-- missing supporting files
-
-Use the repo’s existing commit style. Common local pattern:
-
-```text
-[feat] <skill> 스킬 추가
-```
-
-### Step 7: Push Only When Requested
-
-If the user asked to push, run:
-
-```bash
-git push origin main
-```
-
-After push:
-
-```bash
-git status --short
-git log -1 --oneline
-```
-
-Report commit hashes and whether each repo is clean.
-
-## Verification Checklist
-
-- [ ] `~/.agents/skills/<skill>/SKILL.md` is readable.
-- [ ] Claude/Cursor/Codex runtime paths can read `SKILL.md`.
-- [ ] Runtime paths are symlinks to `~/.agents/skills/<skill>` or a deliberately accepted equivalent.
-- [ ] `name` frontmatter matches the directory name.
-- [ ] Source and publish repo copies have matching hashes when publishing.
-- [ ] README included-skills list is updated when publishing.
-- [ ] Git working tree is clean after commit/push.
-
-## Safety Rules
-
-- Do not publish skills containing tokens, credentials, customer data, private server names, or one-off local secrets.
-- Do not replace a real directory with a symlink automatically.
-- Do not overwrite a different repo copy without showing diff or hash comparison.
-- Do not commit unrelated files.
-- Do not force push.
-- Do not assume OpenCode’s path; discover it first.
-
+- The personal remote must use the SSH host alias from config. Plain `github.com` authenticates with the company key. Check `git config user.email` in the repo too.
+- `skills/.system/` is hidden, so `ls skills` misses it.
+- Copying a whole skill folder drags in `config.local.yml` (personal emails, company paths) and `__pycache__`. The repo `.gitignore` must cover both. A committed `config.local.yml` is a leak by itself.
+- Scanning HEAD is not enough. Earlier commits already leaked content and company author emails, so always scan with `--history`.
+- `.gitignore` does not untrack files committed earlier. The scan reports them as "tracked but gitignored"; remove them with `git rm --cached`.
+- The usage log covers Claude Code only, and only since it was created. Zero hits does not prove a skill is unused in Codex or Cursor, so ask before deleting. A skill name in Codex session logs is the injected skill list, not usage.
+- A second copy or link under `~/.codex/skills` or `~/.cursor/skills` makes Codex list the skill twice. During a repo sync, report such runtime drift and leave fixing it to a separate request.
+- Publish copies that were made generic differ from the local source on purpose. A hash mismatch on those is expected.
+- If sensitive content already reached a pushed commit, follow [references/history-purge.md](references/history-purge.md). It is the only case that allows force push.
