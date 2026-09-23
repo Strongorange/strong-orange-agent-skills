@@ -13,6 +13,7 @@ Install my skills from https://github.com/Strongorange/strong-orange-agent-skill
 2. Verify: each skill is a folder at ~/.agents/skills/<skill>, and ~/.claude/skills/<skill> is a symlink to ../../.agents/skills/<skill>.
    Codex and Cursor read ~/.agents/skills directly. Do not add links under ~/.codex/skills or ~/.cursor/skills, or Codex lists the skill twice.
 3. If a skill folder has config.example.yml, copy it to config.local.yml in the same folder and ask me for the values.
+4. If tone-fix was installed, run `python3 ~/.agents/skills/tone-fix/install.py` to wire its rules and hooks into the installed agents. Run it again after every `npx skills update`.
 ```
 
 ## Install by hand
@@ -48,3 +49,4 @@ npx skills remove -g -s agent-handoff
 - runtime-evidence-debugger
 - scaffold-dev-verify
 - strategy-template-governor
+- tone-fix
