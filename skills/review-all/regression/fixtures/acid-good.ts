@@ -22,17 +22,21 @@ export async function requestPayment(command: RequestPaymentCommand) {
   return prisma.$transaction(async (tx) => {
     const order = await tx.order.findUniqueOrThrow({ where: { id: command.orderId } });
 
-    await tx.payment.create({
-      data: {
+    await tx.payment.upsert({
+      where: { idempotencyKey: command.idempotencyKey },
+      create: {
         orderId: order.id,
         idempotencyKey: command.idempotencyKey,
         amount: order.totalPrice,
         status: 'PENDING',
       },
+      update: {},
     });
 
-    await tx.outboxMessage.create({
-      data: {
+    await tx.outboxMessage.upsert({
+      where: { dedupeKey: command.idempotencyKey },
+      create: {
+        dedupeKey: command.idempotencyKey,
         type: 'PAYMENT_APPROVAL_REQUESTED',
         aggregateId: order.id,
         payload: {
@@ -41,6 +45,7 @@ export async function requestPayment(command: RequestPaymentCommand) {
           idempotencyKey: command.idempotencyKey,
         },
       },
+      update: {},
     });
   });
 }

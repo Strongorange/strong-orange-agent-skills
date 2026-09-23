@@ -1,0 +1,6 @@
+interface:
+  display_name: "TS Web TDD Orchestrator"
+  short_description: "Staged TDD execution for small TS web changes"
+  default_prompt: "Use $ts-web-tdd-orchestrator after applying $test-policy-governor to handle this small TypeScript web task with staged TDD and explicit approval before edits."
+policy:
+  allow_implicit_invocation: true

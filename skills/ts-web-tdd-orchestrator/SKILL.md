@@ -1,14 +1,15 @@
 ---
 name: ts-web-tdd-orchestrator
-description: Plan-first staged TDD orchestration for TypeScript web repositories. Use when a TypeScript, React, Next.js, or Node web task benefits from a short spec, explicit red/green/refactor/verify stages, deterministic validation, and keeping code changes behind explicit user approval. Best suited for small feature additions, policy changes, and bug fixes where tests should act as the primary oracle.
-metadata:
-  version: "0.2.0"
+description: Staged TDD execution for small TypeScript web changes after test scope is chosen. Use when a TypeScript, React, Next.js, or Node web task needs a short spec, explicit red/green/refactor/verify stages, deterministic validation, and explicit approval before edits. Best suited for small feature additions, policy changes, and bug fixes where tests should act as the primary oracle.
 ---
 
 # TS Web TDD Orchestrator
 
 Guide TypeScript web changes through a strict plan-first workflow.
 Favor staged progress and deterministic gates over one-shot implementation.
+
+Apply `$test-policy-governor` before choosing a test level, deciding whether a test should be added or moved, or auditing an existing suite.
+This skill executes staged TDD after that policy decision is already made.
 
 ## Workflow
 
@@ -20,6 +21,7 @@ Favor staged progress and deterministic gates over one-shot implementation.
    - Extract goal, success criteria, expected behavior change, likely file scope, and the smallest useful test target.
    - If requirements, scope, or acceptance criteria are still unclear, ask questions and stop there.
    - Do not edit code while the user is still asking for explanation, review, planning, or tradeoff analysis.
+   - If test scope or level is still undecided, derive it from `$test-policy-governor` before writing the `spec`.
 3. Produce a short approval-ready `spec`.
    - Keep it compact. Capture only:
      - behavior: what should happen
@@ -54,6 +56,7 @@ Favor staged progress and deterministic gates over one-shot implementation.
 - Output only a compact execution spec, not an essay.
 - Include `behavior`, `non-behavior`, `edge cases`, and `oracle`.
 - Prefer observable product behavior over implementation details.
+- Preserve the test level chosen by `$test-policy-governor` unless the user explicitly changes it.
 - If the oracle is weak or missing, say so explicitly before moving to `red`.
 
 ### `red`
@@ -93,7 +96,7 @@ Favor staged progress and deterministic gates over one-shot implementation.
 - Conditional gates:
   - repo-native lint command
   - integration tests
-  - E2E or smoke checks when routing, async effects, focus management, or user-visible workflows changed
+  - E2E or smoke checks when `$test-policy-governor` or the repo's existing conventions require browser-level proof
 - Prefer repo-native equivalents when they are clearly better fits from `package.json`.
   - Example: a project-specific `test`, `check`, or `typecheck` script.
 - Do not add a new production dependency without explicit user confirmation.

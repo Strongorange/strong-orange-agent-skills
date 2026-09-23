@@ -1,6 +1,6 @@
 ---
 name: runtime-evidence-debugger
-description: Evidence-based debugging for any language or framework. Assumes a local HTTP log server is already running on port 7827. Instruments code with hypothesisId-tagged fetch/file logs including call stack traces, collects runtime evidence, then fixes only what logs confirm. Use when a bug cannot be explained by reading code alone, when previous fix attempts failed without runtime data, or when the bug involves async, event, or timing sequences.
+description: Evidence-based debugging for any language or framework. Uses a local HTTP log server on port 7827, preferably the bundled Node server. Instruments code with hypothesisId-tagged fetch/file logs including call stack traces, collects runtime evidence, then fixes only what logs confirm. Use when a bug cannot be explained by reading code alone, when previous fix attempts failed without runtime data, or when the bug involves async, event, or timing sequences.
 ---
 
 # Runtime Evidence Debugger
@@ -15,8 +15,23 @@ description: Evidence-based debugging for any language or framework. Assumes a l
 
 `POST http://127.0.0.1:7827` 서버가 실행 중이어야 한다.
 body JSON의 `logFile` 절대경로에 NDJSON 한 줄 append + CORS 허용.
-서버 구현 방식(Docker 등)은 무관하며, skill 내에서 서버를 시작하지 않는다.
-서버 실행 방법은 이 스킬의 `server/README.md` 참조.
+
+기본 권장 방식은 이 스킬에 포함된 Node 서버를 직접 실행하는 것이다.
+
+```bash
+node server/server.js
+```
+
+포트를 바꿔야 하면:
+
+```bash
+PORT=7828 node server/server.js
+```
+
+Docker는 Node 실행이 어렵거나 격리가 꼭 필요할 때만 선택형 대안으로 사용한다.
+서버 실행 방법과 Docker 대안은 `references/server-setup.md` 참조.
+세션 로그 저장 규칙과 정리 원칙은 `references/runtime-log-storage.md` 참조.
+이 skill은 서버를 자동으로 시작하거나 종료하지 않는다.
 
 브라우저가 `connect-src` CSP 때문에 `localhost`/`127.0.0.1`로 직접 `fetch`하지 못하는 앱이라면,
 브라우저에서 디버그 서버를 직접 호출하지 말고 **same-origin 앱 API 프록시**를 둔다.
@@ -42,7 +57,8 @@ curl -s -o /dev/null -w "%{http_code}" \
 
 세션 상태 확정 (이후 모든 단계에서 고정):
 - **SESSION_ID**: `Date.now().toString(36).slice(-6)` (예: `a3f9c1`)
-- **LOG_FILE**: `{projectRoot}/.cursor/debug-{SESSION_ID}.log`
+- **LOG_DIR**: `{projectRoot}/.runtime-evidence`
+- **LOG_FILE**: `{LOG_DIR}/session-{SESSION_ID}.ndjson`
 
 ---
 
@@ -105,7 +121,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       ...body,
-      logFile: `${process.cwd()}/.cursor/debug-${sessionId}.log`,
+      logFile: `${process.cwd()}/.runtime-evidence/session-${sessionId}.ndjson`,
     }),
   })
 
@@ -148,19 +164,20 @@ with open('LOG_FILE','a') as f: f.write(json.dumps({'logFile':'LOG_FILE','sessio
 
 ## Step 3: 로그 파일 삭제 → 재현 요청
 
-1. `delete_file` 도구로 LOG_FILE 삭제 — **shell rm/touch 금지**
-2. 다른 세션의 로그 파일은 건드리지 않는다
-3. 응답 마지막에 `<reproduction_steps>` 블록 필수:
+1. 현재 환경의 가장 안전한 파일 삭제 수단으로 LOG_FILE 삭제
+2. 가능하면 전용 삭제 도구(`delete_file` 같은 high-level file tool)를 우선 사용
+3. 다른 세션의 로그 파일은 건드리지 않는다
+4. 응답 마지막에 `<reproduction_steps>` 블록 필수:
 
 ```
 <reproduction_steps>
 1. [인터페이스 무관한 재현 지침]
 ...
-N. Press Proceed/Mark as fixed when done.
+N. 현재 인터페이스에서 재현 완료를 표시하거나 알려준다.
 </reproduction_steps>
 ```
 
-규칙: "click" 금지 · "done이라고 답해주세요" 금지 · 인터페이스 분기 금지 · 앱 재시작 필요 시 명시
+규칙: 인터페이스별 버튼명/제스처 지시 금지 · 특정 답장 문구 강제 금지 · 인터페이스 분기 금지 · 앱 재시작 필요 시 명시
 
 ---
 
@@ -192,7 +209,7 @@ LOG_FILE 읽기. 각 가설 판정:
 
 ## Step 6: 수정 검증
 
-1. `delete_file`로 LOG_FILE 삭제
+1. 현재 환경의 가장 안전한 파일 삭제 수단으로 LOG_FILE 삭제
 2. 모든 계측 `runId` → `"post-fix"`
 3. `<reproduction_steps>` 블록과 함께 재현 요청
 4. LOG_FILE 읽기 — **특정 로그 라인 인용으로 성공 근거 제시** (인용 없는 성공 선언 금지)
@@ -206,7 +223,7 @@ LOG_FILE 읽기. 각 가설 판정:
 사용자 확인 후에만:
 1. 모든 `#region agent log` / `#endregion` 블록 제거
 2. 프록시 모드를 썼다면 디버그용 API route/helper 제거
-3. `delete_file`로 LOG_FILE 삭제
+3. 현재 환경의 가장 안전한 파일 삭제 수단으로 LOG_FILE 삭제
 
 ---
 
@@ -216,6 +233,7 @@ LOG_FILE 읽기. 각 가설 판정:
 - REJECTED 가설 코드 변경 즉시 되돌림 (방어적 가드 누적 금지)
 - 계측은 검증 완료 전까지 절대 제거 금지
 - `setTimeout` / `sleep`을 픽스로 사용 금지
-- shell rm/touch 금지 — 로그 파일 조작은 `delete_file` 도구만
+- 세션 로그는 전체 파일 삭제로만 정리하고 truncate/touch로 재사용하지 않는다
+- 삭제는 high-level file tool 우선, 없으면 현재 환경의 가장 안전한 동등 수단 사용
 - 성공 선언 시 특정 로그 라인 인용 필수
 - CSP 에러가 보이면 브라우저 direct fetch를 고집하지 말고 same-origin 프록시로 전환
