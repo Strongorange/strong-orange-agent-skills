@@ -12,6 +12,7 @@ Read `config.local.yml` in this skill folder first: repo paths, personal remote,
 
 - Working source: `~/.agents/skills/<skill>`. Edit skills here.
 - Codex and Cursor read `~/.agents/skills` directly. Only Claude Code needs a link: `~/.claude/skills/<skill>` -> `../../.agents/skills/<skill>`.
+- Installing from a publish repo: `npx skills add <owner/repo> -g -a claude-code codex cursor -s <skill> -y` produces exactly this layout.
 - Publish repos keep `skills/<skill>/` and a README skill list that must match the folder.
 
 ## Where a skill may go
@@ -20,7 +21,7 @@ Resolve the source with `readlink -f` first, then check top to bottom. The first
 
 | Skill | Destination |
 |---|---|
-| Third-party: in `~/.agents/.skill-lock.json`, a link to someone else's repo, or a bundled `.system` skill | Nowhere. Reinstall from its source instead |
+| Third-party: a `~/.agents/.skill-lock.json` entry whose source is not one of the publish repos, a link to someone else's repo, or a bundled `.system` skill | Nowhere. Reinstall from its source instead |
 | Source lives in a company repo | Team repo only, unless the user approves a personal copy. If it is tracked in a company product repo, change it there by PR |
 | Only works with company infra or vault | Team repo only |
 | Anything else | Personal repo |
