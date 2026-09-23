@@ -23,17 +23,21 @@ npx skills add Strongorange/strong-orange-agent-skills --list
 ## Included skills
 
 - agent-handoff
+- agent-skill-sync-manager
 - functional-spec-author
 - hitl-eval-dashboard
+- refactor-review-checklist
+- resume-asset-coach
 - resume-driven-development-coach
+- review-acid
+- review-all
+- review-comments
+- review-ready-branch-rewrite
+- review-solid
+- review-tests
 - runtime-evidence-debugger
 - scaffold-dev-verify
 - strategy-template-governor
 - ts-web-tdd-orchestrator
-- review-comments
-- review-tests
-- review-solid
-- review-acid
-- review-all
 - skill-creator
 - skill-installer

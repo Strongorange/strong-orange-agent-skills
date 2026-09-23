@@ -1,0 +1,4 @@
+interface:
+  display_name: "Refactor Review Checklist"
+  short_description: "Review and self-check refactors safely"
+  default_prompt: "Use $refactor-review-checklist to review this refactor for regression risk, maintainability, and test quality."

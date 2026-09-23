@@ -1,0 +1,4 @@
+interface:
+  display_name: "Resume Asset Coach"
+  short_description: "Turn real work into honest resume assets"
+  default_prompt: "Use $resume-asset-coach to turn this project into honest resume bullets, interview questions, and follow-up answers."
