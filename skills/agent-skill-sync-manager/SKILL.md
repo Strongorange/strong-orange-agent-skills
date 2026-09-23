@@ -41,7 +41,6 @@ Use when the personal repo has not been synced for a while.
 ## Gotchas
 
 - The personal remote must use the SSH host alias from config. Plain `github.com` authenticates with the company key. Check `git config user.email` in the repo too.
-- `skills/.system/` is hidden, so `ls skills` misses it.
 - Copying a whole skill folder drags in `config.local.yml` (personal emails, company paths) and `__pycache__`. The repo `.gitignore` must cover both. A committed `config.local.yml` is a leak by itself.
 - Scanning HEAD is not enough. Earlier commits already leaked content and company author emails, so always scan with `--history`.
 - `.gitignore` does not untrack files committed earlier. The scan reports them as "tracked but gitignored"; remove them with `git rm --cached`.
