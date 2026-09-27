@@ -1,6 +1,6 @@
 ---
 name: review-solid
-description: Review design for SOLID and clean-code signals using an evidence-gated, anti-mechanical lens. Use when the user asks to review design/architecture, check SOLID/clean code, or as part of a code review — flags SRP mixing, duplicated OCP branching, LSP contract breaks, boolean/primitive param lists, cross-site DRY violations, ORM/SDK leaking into core policy, deep control-flow nesting and nested ternaries, boolean-pair returns whose combinations include impossible states, invariants scattered across callers, and errors that lose their cause, while REFUSING to demand interfaces for single implementations, strategy patterns for closed enums, splitting well-factored orchestrators, or flattening two-level nesting on depth alone. Triggers include "SOLID 리뷰", "설계 리뷰", "클린코드 점검", "중첩 점검", "복잡도 리뷰", "review design", "review SOLID".
+description: Review design for SOLID and clean-code signals (SRP, OCP, LSP, DRY, nesting, error cause loss) without demanding speculative abstractions. Use when the user asks to review design/architecture or check clean code, or as part of a code review. Triggers include "SOLID 리뷰", "설계 리뷰", "클린코드 점검", "중첩 점검", "복잡도 리뷰", "review design", "review SOLID".
 ---
 
 # SOLID·클린코드 렌즈 (review-solid)

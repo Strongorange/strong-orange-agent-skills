@@ -1,6 +1,6 @@
 ---
 name: review-all
-description: Run all four clean-lens reviews (comments, tests, SOLID/clean-code, ACID/transactions) over a diff or files and merge results into per-domain buckets plus a shared "other" bucket. Use when the user wants a full clean-code review, a comprehensive review across comment/test/design/transaction lenses, or invokes the combined review — size-adaptive (inline for small diffs, fan-out subagents for large ones). Triggers include "전체 리뷰", "클린 리뷰 전부", "코드 정리 리뷰", "review all lenses", "full clean review".
+description: Run all four clean-lens reviews (comments, tests, SOLID, ACID) over a diff or files and merge the findings per lens. Use when the user wants a full clean-code review. Triggers include "전체 리뷰", "클린 리뷰 전부", "코드 정리 리뷰", "review all lenses", "full clean review".
 ---
 
 # 통합 리뷰 오케스트레이터 (review-all)

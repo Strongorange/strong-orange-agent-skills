@@ -1,6 +1,6 @@
 ---
 name: review-comments
-description: Review code comments for redundancy, staleness, and missing rationale. Use when the user asks to review comments, check comment quality, or as part of a code review — flags comments that merely restate code, change-history blocks, commented-out code, untrackable TODOs, silently-swallowed exceptions, and missing WHY on non-obvious code, while deliberately leaving legitimate rationale/constraint/ticket comments alone. Triggers include "주석 리뷰", "주석 점검", "review comments", "check comments".
+description: Review code comments for redundancy, staleness, and missing rationale. Use when the user asks to review comments or check comment quality, or as part of a code review. Triggers include "주석 리뷰", "주석 점검", "review comments", "check comments".
 ---
 
 # 주석 렌즈 (review-comments)

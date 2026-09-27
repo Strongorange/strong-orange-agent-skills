@@ -1,6 +1,6 @@
 ---
 name: review-acid
-description: Review transaction, concurrency, and data-integrity design (ACID) using an evidence-gated, anti-mechanical lens. Use when the user asks to review transactions, concurrency, data consistency, or as part of a code review of DB write paths — flags split atomicity, read-modify-write lost updates, external calls inside DB transactions, DB-commit-plus-event dual writes without an outbox, missing idempotency keys, swallowed exceptions in transactions, app-only uniqueness checks, and over-long transactions, while REFUSING to demand wrapping simple reads in transactions, always-serializable isolation, merging independent writes, or replacing DB constraints with distributed locks. Triggers include "트랜잭션 리뷰", "동시성 점검", "ACID 리뷰", "정합성 리뷰", "review transactions", "review concurrency".
+description: Review transaction, concurrency, and data-integrity design (atomicity, lost updates, dual writes, idempotency) without demanding blanket transactions or locks. Use when the user asks to review transactions or data consistency, or as part of a code review of DB write paths. Triggers include "트랜잭션 리뷰", "동시성 점검", "ACID 리뷰", "정합성 리뷰", "review transactions", "review concurrency".
 ---
 
 # ACID·트랜잭션 렌즈 (review-acid)

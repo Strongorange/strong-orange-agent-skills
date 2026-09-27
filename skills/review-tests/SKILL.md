@@ -1,6 +1,6 @@
 ---
 name: review-tests
-description: Review test code for weak/meaningless assertions, over-mocking, and implementation-detail coupling. Use when the user asks to review tests, check test quality, or as part of a code review of test files — flags call-only assertions, over-mocked domain logic, missing await on async assertions, coverage-only no-assert tests, self-mirroring expected values, giant snapshots, and shared state, while leaving real-domain-object tests and legitimate boundary interaction checks alone. Triggers include "테스트 리뷰", "테스트 점검", "review tests", "check test quality".
+description: Review test code for weak assertions, over-mocking, and implementation-detail coupling. Use when the user asks to review tests or check test quality, or as part of a code review of test files. Triggers include "테스트 리뷰", "테스트 점검", "review tests", "check test quality".
 ---
 
 # 테스트 렌즈 (review-tests)
