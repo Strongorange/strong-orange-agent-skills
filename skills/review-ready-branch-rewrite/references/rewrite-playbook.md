@@ -130,7 +130,7 @@ git log --oneline --all -- <path/to/file>
 
 ## Worked Example: QR/Barcode Feature (121 files, 65 commits → 12 commits)
 
-This example documents the QR/barcode feature rewrite performed in April 2026.
+Illustrative only: one frontend feature branch. Take the reasoning, not the file groups.
 
 **Original state:** `feature/qr-barcode` — 65 non-merge commits, 121 files, +7,154/-235 lines vs dev
 
@@ -279,7 +279,7 @@ The color drawer hook changes extend existing code (not new feature code). Placi
 ### File Appears in Wrong Commit
 
 If you realize a file belongs in an earlier commit after already committing the later group:
-1. If the review branch is not yet pushed: use `git rebase -i` or `git commit --amend`
+1. If the review branch is not yet pushed: `git commit --fixup=<target-sha>` then `GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash $BASE`, or `git commit --amend` when the target is the last commit
 2. If pushed: add a fixup commit at the end, note it in the PR description
 
 ### Build Breaks Mid-Stack

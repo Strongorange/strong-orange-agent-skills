@@ -60,9 +60,9 @@ git log --oneline -10
 **Default convention (use when nothing is detected):**
 
 ```text
-[type] 메시지
+[type] 무엇이 어떻게 바뀌는지 한 문장
 
-- 설명 (optional, multiple allowed)
+(선택) 코드만 봐서는 알 수 없는 이유 1~2문장
 ```
 
 Allowed types (default): `feat`, `fix`, `design`, `style`, `refactor`, `comment`, `docs`, `test`, `chore`, `rename`, `remove`, `ci`, `build`, `revert`
@@ -70,7 +70,7 @@ Allowed types (default): `feat`, `fix`, `design`, `style`, `refactor`, `comment`
 Rules:
 - Header in Korean (or match the language used in recent commits)
 - No trailing period on the subject line
-- Body lines are flat bullets (`- 설명`), no nested bullets
+- Body is optional: one or two sentences on why. Do not list the changed files or functions
 - No mixed-language headers
 
 ## Workflow
@@ -119,28 +119,11 @@ Commit N: [type] 설명
   Rationale: why these files belong together
 ```
 
-**Grouping order (prefer this sequence):**
-
-1. Types, domain model, contracts (`[feat]`)
-2. Core logic: renderers, pure utilities, non-UI libs (`[feat]`)
-3. API clients, event logging, upload utilities (`[feat]`)
-4. Core hooks (internal, non-public) (`[feat]`)
-5. Public hooks and feature barrel exports (`[feat]`)
-6. UI components — drawer panels, forms, shared components (`[feat]`)
-7. Widgets / entry-point shells (`[feat]`)
-8. Editor/app integration — wiring into sidebars, menus, subheaders (`[feat]`)
-9. Shared/common component extensions touched for this feature (`[feat]` or `[refactor]`)
-10. E2E tests and CI config (`[test]` + `[ci]`)
-11. Infrastructure: package.json, Docker, lint config (`[chore]`)
+**Grouping:** group by causal relationship, not by file extension or layer. Each commit holds what must exist together for one slice of the feature to work. Extensions to existing shared code come after the new feature code, E2E tests and CI config get their own commit (Rule 7), and infrastructure-only changes (package.json, lockfile, lint config) go last.
 
 > **Unit tests are inline:** add each unit test file to the same commit as its source file. Only E2E tests and integration-level tests that span multiple commits get their own commit (see Rule 7).
 
-**Adjust freely** — the order above is a heuristic, not a rule. Group by causal relationship, not by file extension or layer.
-
-**Commit count guidance:**
-- < 50 files changed → aim for 5–8 commits
-- 50–120 files changed → aim for 10–15 commits
-- 120+ files changed → consider splitting into multiple PRs first
+**Commit count:** see the table in `references/rewrite-playbook.md`.
 
 ### Step 3: Create the Review Branch
 
@@ -148,9 +131,9 @@ Commit N: [type] 설명
 # Start from the tip of the original branch
 git checkout -b <branch-name>-review <original-branch-name>
 
-# Soft-reset to merge-base: all changes become unstaged
+# Move HEAD to merge-base; --soft leaves every change staged
 git reset --soft $BASE
-git reset HEAD .     # move everything from index back to working tree
+git reset HEAD .     # unstage everything so each group is added by hand
 
 # Verify: all files should now be untracked/modified, no staged files
 git status --short | head -20
@@ -179,7 +162,7 @@ git log --oneline -5
 git status --short | wc -l   # remaining files count
 ```
 
-**After every 2–3 commits, run a type check:**
+**After each commit, run the type check (Rule 4):**
 
 ```bash
 npx tsc --noEmit 2>&1 | tail -10
@@ -213,39 +196,27 @@ Fix by amending the relevant commit or adding a fixup commit, then re-verify.
 
 ## Commit Message Contract
 
-Use the project-detected convention (Step 0). When the default applies:
+Use the project-detected convention (Step 0). When the default applies, follow the default convention in Step 0.
+
+**Examples (illustrative):**
 
 ```text
-[type] 메시지
-
-- 설명 (optional)
-```
-
-**Examples:**
-
-```text
-[feat] QR/바코드 타입 정의 및 도메인 모델
+[feat] QR · 바코드 객체의 타입과 저장 형식을 추가
 ```
 
 ```text
-[feat] QR/바코드 코어 훅 - 생성, 적용, 미리보기
+[feat] QR · 바코드를 만들면 미리보기를 보여 주고 캔버스에 넣을 수 있게 함
 
-- useQrBarcodeGenerate: SVG 생성 및 S3 업로드 트리거
-- useQrBarcodeApply: draft를 캔버스 오브젝트에 적용
-- useQrBarcodePreview: 미리보기 이미지 디바운스 생성
+미리보기는 입력이 멈춘 뒤에 만들어 업로드 요청이 몰리지 않게 함
 ```
 
 ```text
-[test] QR/바코드 E2E 테스트 및 CI 설정
-```
-
-```text
-[chore] oxlint 설정, Docker, 패키지 업데이트
+[test] QR · 바코드 생성 흐름을 E2E 테스트로 확인
 ```
 
 Avoid:
 - Subject ending with `.`
-- Nested bullets in body
+- A body that lists changed files or functions
 - English subjects when the project uses Korean (or vice versa)
 - Vague messages like `[refactor] 코드 정리` without specifying what
 
