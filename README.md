@@ -56,3 +56,4 @@ npx skills remove -g -s agent-handoff
 - scaffold-dev-verify
 - strategy-template-governor
 - tone-fix
+- work-check
