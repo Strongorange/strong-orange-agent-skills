@@ -13,7 +13,7 @@ description: Run all four clean-lens reviews (comments, tests, SOLID, ACID) over
 - 인자 파일/경로가 있으면 그것. 없으면 `git diff`. **기본 브랜치를 `main`으로 하드코딩하지 말 것** — 레포마다 다르다(`dev`·`master`·`trunk` 등):
   ```bash
   git diff --name-only --diff-filter=d HEAD             # staged + unstaged (--diff-filter=d: 삭제 파일 제외)
-  BASE=$(git symbolic-ref -q --short refs/remotes/origin/HEAD || echo origin/main)
+  BASE=$(git symbolic-ref -q --short refs/remotes/origin/HEAD)  # 비어 있으면 PR base 나 사용자가 알려 준 브랜치
   git diff --name-only --diff-filter=d "$BASE...HEAD"   # 브랜치 변경분
   ```
 
@@ -28,7 +28,7 @@ acid 신호 프리필터(없으면 acid 렌즈를 붙이지 않는다 — 확정
 ```bash
 grep -lE '\$transaction|beginTransaction|prisma\.|knex|typeorm|\.save\(|\.create\(|\.update\(|\.updateMany\(|\.delete\(|INSERT |UPDATE |DELETE |fetch\(|axios|publish\(' <files>
 ```
-> 이 정규식은 `regression/check-assignment.sh`와 **같은 문자열이어야 한다.** 한쪽만 고치면 문서와 실행이 갈라진다 — 고칠 땐 양쪽 다, 그리고 `./check-assignment.sh --check`로 확인.
+> 이 정규식은 `regression/check-assignment.sh`와 **같은 문자열이어야 한다.** 한쪽만 고치면 문서와 실행이 갈라진다 — 고칠 땐 양쪽 다, 그리고 `regression/check-assignment.sh --check`로 확인.
 > 여는 괄호를 붙이는 이유: `\.update`만 쓰면 `updatedAt` 필드에도 걸려 관계없는 파일까지 acid 대상이 된다.
 
 ### 2. 규모 적응
@@ -55,17 +55,18 @@ const SCHEMA = { type:'object', properties:{
 }, required:['overallLevel','primary','other'] }
 const results = await parallel(jobs.map(j => () =>
   agent(`Skill 도구로 '${LENS_SKILL[j.L]}' 스킬을 로드해 그 렌즈 규칙(게이트·지적 금지)을 그대로 적용하라. `
-      + `대상 파일 ${j.f} 를 Read해 리뷰하고, primary/other로 분리하라. 없으면 빈 배열.`,
+      + `대상 파일 ${j.f} 를 Read해 리뷰하고, primary/other로 분리하라. 없으면 빈 배열. `
+      + `함께 바뀐 파일: ${files.join(', ')}. 여러 파일에 걸친 중복이나 테스트 대상 코드 확인이 필요할 때만 이 중에서 Read하라.`,
     { label:`${j.L}:${j.f}`, schema:SCHEMA, agentType:'general-purpose' })
     .then(r => ({ ...j, ...(r||{primary:[],other:[]}) }))))
 ```
 
-> 렌즈를 이름으로 로드하는 게 핵심. 만약 서브에이전트 환경에서 이름 로드가 안 되면, 형제 스킬 SKILL.md를 **이 스킬과 같은 디렉토리(상대 경로)** 에서 Read할 것 — 어느 경우에도 머신 절대경로를 하드코딩하지 않는다.
+> 렌즈를 이름으로 로드하는 게 핵심. 만약 서브에이전트 환경에서 이름 로드가 안 되면, 형제 스킬 SKILL.md를 **이 스킬 디렉토리 기준 상대 경로**(`../review-comments/SKILL.md` 등)로 Read할 것 — 어느 경우에도 머신 절대경로를 하드코딩하지 않는다.
 
 ### 3. 병합·보고
 - 도메인별 `primary` **4버킷**(주석·테스트·설계·트랜잭션) + 전 렌즈 `other`를 합친 공통 버킷.
 - dedup ①(`other` 안에서): 같은 (파일, 줄) 중복 제거. **`other`는 한 파일에 렌즈 2~3개가 각자 채우므로 같은 내용이 여러 번 올라온다** — 줄이 어긋나도 같은 사안이면 하나로 합치고, 가장 구체적인 서술을 남긴다.
-- dedup ②(버킷을 가로질러): **어떤 사안이 도메인 버킷의 `primary`에 이미 있으면 `other`에서는 지운다.** 실측에서 acid가 primary로 잡은 lost update를 comment·solid가 각자 `other`에 또 올려 기타 버킷이 트랜잭션 버킷의 복사본이 됐다. 남기는 쪽은 **그 사안을 담당하는 렌즈**(트랜잭션 사안이면 acid).
+- dedup ②(버킷을 가로질러): **어떤 사안이 도메인 버킷의 `primary`에 이미 있으면 `other`에서는 지운다.** 남기는 쪽은 **그 사안을 담당하는 렌즈**(트랜잭션 사안이면 acid).
 - severity가 렌즈마다 다르면(같은 사안을 acid=major, solid=blocker) **담당 렌즈의 값을 쓴다.** 최댓값이 아니다 — 담당 렌즈가 그 도메인의 정본이다.
 - 심각도순 정렬(blocker→major→minor→nit). `other`는 항상 primary 아래. **단 `other`에 blocker/major가 있으면 보고 맨 앞에 한 줄 요약으로 끌어올린다** — 도메인 밖이라는 이유로 진짜 버그가 묻히면 안 된다.
 - 파일별로 clean(빈 배열)이면 그대로 "이상 없음"으로 표기 — 억지 지적 금지.
@@ -93,15 +94,13 @@ const results = await parallel(jobs.map(j => () =>
 네 렌즈 다 **명확한 것만 잡고 과설계·노이즈는 침묵**하도록 실측 튜닝됨. 이 오케스트레이터도 같은 정신: 커버리지를 위해 억지로 채우지 말 것.
 
 ## 회귀 하네스
-동봉 `regression/`. **렌즈 회귀**(`fixtures/` 15개 — 지적 품질)와 **오케스트레이터 회귀**(병합 품질)가 별개다:
+동봉 `regression/`. **렌즈 회귀**(`fixtures/` 18개 — 지적 품질)와 **오케스트레이터 회귀**(병합 품질)가 별개다:
 
 | 층 | 대상 | 비용 |
 |---|---|---|
-| 1 `check-assignment.sh --check` | §1-1 배정·acid 프리필터 | LLM 0개, 1초 |
+| 1 `regression/check-assignment.sh --check` | §1-1 배정·acid 프리필터 | LLM 0개, 1초 |
 | 2 `merge-cases/*.json` | §3 병합·dedup·승격·정렬 (녹화된 렌즈 출력 → 리뷰 재실행 없음) | 에이전트 1개 × 5 |
 | 3 `scenario/` 5파일 | 배정→fan-out→병합 전 경로 | 전 경로 1회 |
 
 §1-1이나 §3을 고쳤으면 **최소 1층+2층**을 돌린다. 절차·합격조건은 `regression/README.md`.
-**픽스처는 scratch로 복사해서 그 경로만 리뷰어에게 준다** — 하네스 경로를 주면 정답지를 보게 되고 측정이 무의미해진다.
-
-실측 상태(2026-07-23): 1층 PASS(음성 케이스 확인) · **2층 5/5 PASS** · 3층 미실측.
+**픽스처는 scratch로 복사해서 그 경로만 리뷰어에게 준다** — 하네스 경로를 주면 정답지를 보게 되고 측정이 무의미해진다. 층별 실측 결과는 `regression/README.md` 에 둔다.

@@ -8,7 +8,7 @@ description: Review code comments for redundancy, staleness, and missing rationa
 주석 **품질만** 평가하는 단일 렌즈 리뷰. 맨몸 리뷰어가 자연히 건너뛰는 관심사라, 이 렌즈의 가치는 "누락된 주석 렌즈를 강제"하는 것이다.
 
 > **원문**: 이 스킬 디렉토리의 `references/guide.md` (동봉 — 외부 경로 의존 없음)
-> 아래 목록은 그 문서의 압축본에 **실측으로 드러난 구멍을 메운 것**이고, `§N`은 원문의 절 번호(§1 동작 서술, §10 TODO, §11 예외 무시, §12 타입단언·린트, §13 변경이력, §14 죽은 코드)다. **판단이 애매하면 해당 절을 직접 읽고 결정한다.** 원문에 대응 절이 없는 항목(중복 위치·선언 오염·재진술 혼합·헤더 목록)은 이 파일이 정본이다.
+> 아래 목록은 그 문서의 압축본에 **실측으로 드러난 구멍을 메운 것**이고, `§N`은 원문의 절 번호(§1 동작 서술, §10 TODO, §11 예외 무시, §12 타입단언·린트, §13 변경이력, §14 죽은 코드)다. **이 목록에 없는 항목은 지적하지 않는다.** 애매하면 목록에 있는 항목을 판정할 때만 해당 절을 읽는다. 원문과 이 파일이 다르면 이 파일을 따른다: TODO 는 이슈 · 이유 · 완료조건 중 하나라도 있으면 통과, 원문의 "코드를 먼저 고쳐라"와 "장황한 주석은 복잡도 신호"는 지적하지 않는다. 원문에 대응 절이 없는 항목(중복 위치·선언 오염·재진술 혼합·헤더 목록)은 이 파일이 정본이다.
 
 ## 실행
 
@@ -17,7 +17,7 @@ description: Review code comments for redundancy, staleness, and missing rationa
    - 없으면 `git diff` 변경 파일. **기본 브랜치를 `main`으로 하드코딩하지 말 것** — 레포마다 다르다(`dev`·`master`·`trunk` 등). 변경 hunk 위주로 본다.
      ```bash
      git diff --name-only --diff-filter=d HEAD             # staged + unstaged (--diff-filter=d: 삭제 파일 제외)
-     BASE=$(git symbolic-ref -q --short refs/remotes/origin/HEAD || echo origin/main)
+     BASE=$(git symbolic-ref -q --short refs/remotes/origin/HEAD)  # 비어 있으면 PR base 나 사용자가 알려 준 브랜치
      git diff --name-only --diff-filter=d "$BASE...HEAD"   # 브랜치 변경분
      ```
 2. 각 대상 파일에 아래 **게이트**와 **지적/금지 목록**을 그대로 적용한다.
@@ -47,7 +47,7 @@ description: Review code comments for redundancy, staleness, and missing rationa
 - **타입·포트·인터페이스 선언에 적힌 소비처 사정** — "이 필드는 A 가 B 판별에 쓴다" 류. 선언에는 그 값이 무엇인지만. 소비처가 바뀌면 선언 쪽 주석이 먼저 낡는다
 - **재진술과 WHY가 한 문장에 섞인 주석** — 뒤에 붙은 WHY 때문에 게이트를 통과하기 쉽다. 재진술 부분만 덜어내고 WHY만 남기게 지적
 - **모듈·파일 헤더의 함수 목록** — 스크롤하면 보이고, 함수가 늘면 목록만 낡는다. 헤더엔 이 모듈이 뭘 맡는지와 설계 제약만
-- **근거 없는 타입 단언·`eslint-disable`** (§12) — `as any`·`@ts-ignore`·`eslint-disable-next-line` 에 왜 필요한지가 없음. 지적 금지의 "정당한 근거가 붙은" 쪽만 있고 부당한 쪽이 없어 그동안 발동하지 않던 항목
+- **근거 없는 타입 단언·`eslint-disable`** (§12) — `as any`·`@ts-ignore`·`eslint-disable-next-line` 에 왜 필요한지가 없음
 - **주석과 코드가 이미 어긋남** — 주석이 서술하는 동작·조건·반환이 현재 코드와 다름. 낡음은 "선언부 오염" 말고 이 형태가 더 흔하다. (앞으로 낡을 것 같다는 예측은 제외 — 관찰이 아니다)
 - **이유는 적혀 있으나 로그·재처리 없이 예외를 완전히 삼킴** (§11) — "무시"보다 한 겹 위. 주석이 catch 를 정당화하는데 실제로는 흔적도 안 남는다
 - **근거를 주장하지만 내용이 빈 주석** (§8) — "성능을 위해"·"안전을 위해"만 적고 무엇이 문제였는지·어떤 규모에서인지가 없음. WHY 를 참칭해 게이트를 통과한다
@@ -70,15 +70,3 @@ description: Review code comments for redundancy, staleness, and missing rationa
 
 **severity 기준 (4렌즈 공통 — 병합 시 이 값으로 정렬하므로 벗어나지 말 것)**
 `blocker` 데이터 손상·보안·머지 불가 / `major` 릴리스 전 고쳐야 함 / `minor` 고치면 좋음 / `nit` 취향·비강제
-
-## 검증됨
-comment-good 픽스처(정당한 WHY·티켓·eslint 주석)에서 오탐 0, comment-medium(맨몸 리뷰어가 0/2로 놓친 중복·매직 주석)에서 3/3 회복. 회귀 재검증 절차는 review-all 동봉 `regression/README.md` 참조.
-
-## v1.2 (2026-08-14) — 원문 전수 점검
-원문 절 ↔ 압축본 항목을 전부 대조해 갭 12건을 뽑고 5건을 반영했다. 가장 큰 것은 **`eslint-disable`·타입 단언이 지적 금지에만 있고 지적 대상엔 없어** 근거 없는 disable 을 영영 못 잡던 구조적 누락(닫힌 게이트에서는 "정당한 것은 봐주라"만 있으면 부당한 것도 통과한다).
-
-- 반영: 근거 없는 단언·disable / 코드와 이미 어긋난 주석 / 이유는 있으나 로그 없는 삼킴 / 근거를 참칭하는 빈 주석 / 외부 우회 주석 미완결
-- 제외: TODO 3요소를 AND 로 되돌리기(압축본이 의도적으로 완화한 지점), "WHY 주석이 필요한 코드를 먼저 고쳐라"(지적 금지와 충돌), 분량을 복잡도 신호로 읽기(같은 이유)
-- **실측**: `comment-gaps.ts` 픽스처(결함 4 + 함정 3) 1패스 — **4/4 검출, 함정 3종 침묵**. 근거 없는 disable 을 잡으면서 같은 파일의 근거 있는 disable 과 대비해 설명했다.
-
-**게이트 2번·추가 4항목 도입 후 재검증**: good 2명 오탐 0(둘 다 primary 빈 배열, high) · medium 3/3(누락 항목 포함) · bad 5/5. 도입 계기는 실측 — 같은 사실을 세 곳에 복사한 주석, 타입 선언에 적힌 소비처 사정, 재진술+WHY 혼합 문장이 게이트 1만으로는 **7건 중 0건** 검출됐고 overallLevel 이 high 로 나왔다.

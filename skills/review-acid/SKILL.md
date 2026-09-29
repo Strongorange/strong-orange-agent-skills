@@ -15,7 +15,7 @@ description: Review transaction, concurrency, and data-integrity design (atomici
 1. **대상 결정**: 인자 파일, 없으면 `git diff` 변경 파일 중 **DB 쓰기·트랜잭션·외부 연동이 있는 것만**(없는 파일은 아예 대상에서 뺀다). **기본 브랜치를 `main`으로 하드코딩하지 말 것** — 레포마다 다르다(`dev`·`master`·`trunk` 등).
    ```bash
    git diff --name-only --diff-filter=d HEAD             # staged + unstaged (--diff-filter=d: 삭제 파일 제외)
-   BASE=$(git symbolic-ref -q --short refs/remotes/origin/HEAD || echo origin/main)
+   BASE=$(git symbolic-ref -q --short refs/remotes/origin/HEAD)  # 비어 있으면 PR base 나 사용자가 알려 준 브랜치
    git diff --name-only --diff-filter=d "$BASE...HEAD"   # 브랜치 변경분
    ```
 2. 각 파일에 **게이트** 적용. 스키마·불변조건이 발췌에 없으면 단정 대신 그 사실을 issue에 명시(컨텍스트-갭은 blocker가 아니라 낮은 severity로).
@@ -75,14 +75,3 @@ description: Review transaction, concurrency, and data-integrity design (atomici
 
 **severity 기준 (4렌즈 공통 — 병합 시 이 값으로 정렬하므로 벗어나지 말 것)**
 `blocker` 데이터 손상·보안·머지 불가 / `major` 릴리스 전 고쳐야 함 / `minor` 고치면 좋음 / `nit` 취향·비강제. 스키마·불변조건을 못 본 컨텍스트-갭 지적은 blocker 금지(minor 이하).
-
-## 검증됨
-acid-bad 4/4·acid-medium 2/2(lost update·앱검증-only), acid-good/good2 하드 함정("트랜잭션 감싸/락 추가/독립작업 묶어") 오탐 0. baseline이 overallLevel을 역전(bad=high)한 걸 렌즈가 교정(bad=low). 회귀는 review-all 동봉 `regression/` 참조.
-
-## v1.2 (2026-08-14) — 원문 전수 점검
-원문 93개 절을 압축본과 대조해 갭 46건을 뽑고, **파일 하나로 판정 가능한 것만** 선별해 지적 대상 8줄·지적 금지 3줄·제안 규칙 2줄을 추가했다.
-
-핵심은 **지적 금지에만 있어 기존 코드를 지적할 수 없던 3건**이다 — 단순 조회 `@Transactional`, 분산 락 유일성, 복제본 즉시 읽기. "리뷰어가 그렇게 요구하지 말라"만 적혀 있었고 "이미 그렇게 된 코드를 지적하라"가 없었다. 닫힌 게이트에서는 금지 문구가 지적 대상을 대신하지 못한다.
-
-- 제외(46건 중 대부분): NOT NULL·FK·CHECK·부분 고유 인덱스 부재, 격리 수준·복제 구성, Dirty/Non-repeatable Read, Write Skew, 백업·가용성 — **스키마·인프라 파일 없이는 판정 불가**. 대신 "추정해서 단정 금지"를 지적 금지에 넣었다.
-- **실측**: `acid-gaps.ts`(결함 8 + 함정 4) 1패스 — **8/8 검출, 함정 3종 침묵**. 스키마를 못 본 2건은 "이 파일에서 확인 불가"를 issue 에 적고 severity 를 낮췄다(컨텍스트-갭 규칙 준수).

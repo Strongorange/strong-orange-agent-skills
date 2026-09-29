@@ -5,7 +5,7 @@ description: Review design for SOLID and clean-code signals (SRP, OCP, LSP, DRY,
 
 # SOLID·클린코드 렌즈 (review-solid)
 
-책임 경계·이름·의존성·추상화를 본다. **evidence-gated** — 관찰된 신호 없이는 침묵한다. 원문 자체가 "기계적으로 쫓지 말라"고 반복하므로, 이 렌즈의 핵심은 지적 못지않게 **지적을 참는 것**이다. (실측: 상 수준 코드에 "인터페이스 뽑아라/전략패턴/쪼개라" 오탐 0.)
+책임 경계·이름·의존성·추상화를 본다. **evidence-gated** — 관찰된 신호 없이는 침묵한다. 원문 자체가 "기계적으로 쫓지 말라"고 반복하므로, 이 렌즈의 핵심은 지적 못지않게 **지적을 참는 것**이다.
 
 > **원문**: 이 스킬 디렉토리의 `references/guide.md` (동봉 — 외부 경로 의존 없음)
 > 아래 목록은 그 문서의 압축본이다. 원칙별 절(SRP·OCP·LSP·ISP·DIP)과 클린코드 절이 있고, "조건문이 항상 나쁜 것은 아니다"·"과도하게 분리한 예" 같은 **반대 방향 절**이 지적 금지의 근거다. **판단이 애매하면 해당 절을 직접 읽고 결정한다.**
@@ -17,7 +17,7 @@ description: Review design for SOLID and clean-code signals (SRP, OCP, LSP, DRY,
 1. **대상 결정**: 인자 파일, 없으면 `git diff` 변경 파일. **기본 브랜치를 `main`으로 하드코딩하지 말 것** — 레포마다 다르다(`dev`·`master`·`trunk` 등).
    ```bash
    git diff --name-only --diff-filter=d HEAD             # staged + unstaged (--diff-filter=d: 삭제 파일 제외)
-   BASE=$(git symbolic-ref -q --short refs/remotes/origin/HEAD || echo origin/main)
+   BASE=$(git symbolic-ref -q --short refs/remotes/origin/HEAD)  # 비어 있으면 PR base 나 사용자가 알려 준 브랜치
    git diff --name-only --diff-filter=d "$BASE...HEAD"   # 브랜치 변경분
    ```
 2. 각 파일에 **3단 게이트** 적용.
@@ -71,14 +71,3 @@ description: Review design for SOLID and clean-code signals (SRP, OCP, LSP, DRY,
 
 **severity 기준 (4렌즈 공통 — 병합 시 이 값으로 정렬하므로 벗어나지 말 것)**
 `blocker` 데이터 손상·보안·머지 불가 / `major` 릴리스 전 고쳐야 함 / `minor` 고치면 좋음 / `nit` 취향·비강제. 강신호=major+, 약신호=nit 매핑이 이 기준보다 우선한다.
-
-## 검증됨 (v1.1)
-solid-bad 강신호 3/3, solid-medium 약신호 2/2(불리언·ORM누수 nit), solid-good/good2 하드 함정 오탐 0·값객체 노이즈 0. review-all 동봉 `regression/` 참조.
-
-## v1.2 (2026-08-14) — 신호 7개 추가, 부분 검증
-원문에 있으나 압축본에 한 번도 안 올라왔던 절을 반영: LSP·ISP 계약 위반, 불변 조건이 호출부에 흩어짐(§clean-4), 오류 구체성(§clean-6), 추상화 수준 혼재(§clean-2), 제어흐름 중첩(§KISS). 상태 조합 모순은 원문에 없는 신규.
-
-- **양성 5/5**: `solid-complexity.ts`(파일명을 바꿔 정답 힌트 제거) 서브에이전트 실측 — 중첩 5단·중첩 삼항·조합 모순·LSP·불변조건 흩어짐 전부 major 로 검출. 조합 모순 신호는 정답지에 없던 **도달 불가 분기**(`applyCoupon` 마지막 `return`)까지 끌어냈다.
-- **오탐 0**: 함정 4종(단일 삼항·독립 2단 중첩·도메인 오류 모범 2곳·유스케이스 조율) 전부 침묵. 실제 프로덕션 코드 2파일(`ai-credit` 의 `daily-limit.ts`·`deduction.ts`)로도 확인 — 전자는 primary 빈 배열, 후자는 nit 2건인데 둘 다 **기존** 약한 신호(선택적 의존·인접 동형 원시값)라 새 신호의 오탐이 아니다.
-- 실측 절차: 채점 기준을 결과 보기 **전에** 파일로 적어두고 대조했다(사후 합리화 방지). 그런데도 EXPECTED 가 `deduction.ts` 의 정당한 nit 1건을 예측 못 했다 — 기준을 미리 적는 것과 기준이 완전한 것은 다르다.
-- 반영하지 않은 절과 이유: "동일 버그가 여러 위치에서 반복"(diff 하나로는 관찰 불가), "상속보다 조합"(오탐 위험 대비 빈도 낮음), "일관성 > 개인적 우아함"(**렌즈가 파일 단위로 배정돼 주변 코드를 못 본다 — 구조적 한계**).
