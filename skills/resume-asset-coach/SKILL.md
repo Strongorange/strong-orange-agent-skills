@@ -1,6 +1,6 @@
 ---
 name: resume-asset-coach
-description: Turn real projects, features, refactors, incidents, and technical tooling work into honest resume and interview assets. Use when Codex should extract resume bullets, project summaries, portfolio blurbs, defensible ownership framing, 1-minute interview stories, likely interviewer questions, follow-up questions, or AI-assisted credibility-safe wording from a repo, PR, changelog, ticket, or user-provided work history.
+description: Turn real projects, features, refactors, incidents, and technical tooling work into honest resume and interview assets. Use when extracting resume bullets, project summaries, portfolio blurbs, defensible ownership framing, 1-minute interview stories, likely interviewer questions, follow-up questions, or AI-assisted credibility-safe wording from a repo, PR, changelog, ticket, or user-provided work history. For evidence collected across a work period (project, week, sprint, date range) from git, GitHub, and an Obsidian vault, use resume-driven-development-coach instead.
 ---
 
 # Resume Asset Coach
@@ -87,7 +87,7 @@ When AI materially helped, frame the work as user-owned decision making plus AI-
 
 Good patterns:
 - `Used AI-assisted implementation while owning requirements, technical decisions, validation, and release.`
-- `Led the workflow and policy design, then used AI to accelerate implementation and documentation.`
+- `Designed the workflow and policy, then used AI to accelerate implementation and documentation.`
 
 Avoid:
 - claiming manual from-scratch implementation if false
