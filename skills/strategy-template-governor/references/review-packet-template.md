@@ -22,7 +22,6 @@ Use this template for every final recommendation.
 - D7 Protocol heterogeneity:
 - D8 Change urgency:
 - D9 Refactor cost/risk:
-- Computed `S`, `T`, `L`, `U`, `R`:
 
 ## 4) Why-Not Analysis
 1. Why rejected option A is weaker:

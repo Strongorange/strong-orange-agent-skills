@@ -22,11 +22,14 @@ Write a functional specification that is grounded in reality, not guessed from f
    - For `TO-BE`, label desired behavior clearly and keep current behavior separate.
 4. Use the team or repo template if one already exists.
    - If none exists, use `references/spec-template.md`.
-5. Use one unified detailed functional-spec format for both `AS-IS` and `TO-BE`.
+
+## Document Content
+
+- Use one unified detailed functional-spec format for both `AS-IS` and `TO-BE`.
    - Keep the section order stable across documents.
    - Change the content by mode, not the structure.
    - Do not introduce a separate test-plan or QA section unless the user explicitly asks for it.
-6. Fill the minimum decision-useful sections.
+- Fill the minimum decision-useful sections.
    - Purpose and background
    - Scope and exclusions
    - Actors, prerequisites, dependencies
@@ -39,12 +42,12 @@ Write a functional specification that is grounded in reality, not guessed from f
    - Error handling
    - Non-functional requirements
    - Open questions and risks
-7. For `AS-IS` documentation, add an explicit current-gap section.
+- For `AS-IS` documentation, add an explicit current-gap section.
    - Record code/data mismatches, dead paths, stale flags, or policy drift separately.
    - Do not mix current behavior with intended behavior in the same requirement line.
-8. For `TO-BE` documentation, add explicit compatibility notes.
+- For `TO-BE` documentation, add explicit compatibility notes.
    - Record migrations, rollout constraints, fallback behavior, and what must stay unchanged.
-9. Include implementation traceability when the doc is code-grounded.
+- Include implementation traceability when the doc is code-grounded.
    - List the files, endpoints, tables, flags, and services used to verify the document.
 
 ## Rules
@@ -52,8 +55,6 @@ Write a functional specification that is grounded in reality, not guessed from f
 - Use one requirement per line when possible: `The system must ...`
 - Prefer concrete nouns and exact values over vague wording.
 - Do not hide uncertainty. Put it in `Open Questions` or `Risks`.
-- Do not guess details that can be discovered by reading the repo.
-- Treat test scenarios and QA cases as a separate artifact by default.
 - If the codebase contradicts older docs or UI labels, trust the implementation and record the contradiction explicitly.
 - If the user asks for a saved document, prefer one of these filenames unless the repo already has a naming convention:
   - `<feature>-functional-spec-as-is.md`

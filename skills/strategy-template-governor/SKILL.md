@@ -39,29 +39,13 @@ Verdict rules:
 
 ## Design Boundaries by Verdict
 
-For Strategy-dominant:
-1. Keep one interface contract for interchangeable executors.
-2. Move per-variant protocols/providers into concrete strategies.
-3. Keep selection/composition at one boundary (factory/map/composer).
-
-For Template-dominant:
-1. Implement a fixed `final`/non-overridden flow entrypoint.
-2. Expose only required operations and optional hooks.
-3. Keep shared lifecycle in base and forbid external reordering.
-
-For Hybrid:
-1. Use Strategy for outer runtime variant swap.
-2. Use Template inside each strategy family for stable internal lifecycle.
-3. Keep one source of truth for cross-cutting validation and error policy.
-
-For No-change:
-1. Keep the current architecture and state explicit reasons.
-2. List guardrails that prevent further drift.
-3. Define objective re-evaluation triggers for revisiting pattern changes.
+- Strategy-dominant: keep variant selection at one boundary (factory, map, or composer).
+- Hybrid: Strategy for the outer runtime swap, Template inside each strategy family. Keep one source of truth for cross-cutting validation and error policy.
+- No-change: keep the current architecture with explicit reasons, list guardrails against further drift, and define objective re-evaluation triggers.
 
 ## Required Output Format
 
-Always output a complete design review packet using `references/review-packet-template.md`.
+Output a complete design review packet using `references/review-packet-template.md`.
 
 Minimum required sections:
 1. Verdict and confidence.
@@ -72,7 +56,7 @@ Minimum required sections:
 6. Migration/compatibility considerations.
 7. Disconfirming evidence that argues against the chosen verdict.
 
-## Anti-Forcing Gate Checks (Mandatory)
+## Anti-Forcing Checks
 
 Do not issue implementation-ready advice unless all checks pass:
 1. At least three code-grounded evidence points are present.
@@ -88,7 +72,7 @@ If a check fails, return:
 1. Missing evidence list.
 2. Required next inspection targets.
 3. Temporary recommendation with explicit uncertainty.
-4. No-change as the default safe interim verdict unless urgency is high.
+4. Verdict No-change, even when urgent, until the missing evidence is collected.
 
 ## Reference Navigation
 

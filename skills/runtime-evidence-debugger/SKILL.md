@@ -164,10 +164,9 @@ with open('LOG_FILE','a') as f: f.write(json.dumps({'logFile':'LOG_FILE','sessio
 
 ## Step 3: 로그 파일 삭제 → 재현 요청
 
-1. 현재 환경의 가장 안전한 파일 삭제 수단으로 LOG_FILE 삭제
-2. 가능하면 전용 삭제 도구(`delete_file` 같은 high-level file tool)를 우선 사용
-3. 다른 세션의 로그 파일은 건드리지 않는다
-4. 응답 마지막에 `<reproduction_steps>` 블록 필수:
+1. LOG_FILE 삭제(삭제 방법은 Critical Constraints)
+2. 다른 세션의 로그 파일은 건드리지 않는다
+3. 응답 마지막에 `<reproduction_steps>` 블록 필수:
 
 ```
 <reproduction_steps>
@@ -209,7 +208,7 @@ LOG_FILE 읽기. 각 가설 판정:
 
 ## Step 6: 수정 검증
 
-1. 현재 환경의 가장 안전한 파일 삭제 수단으로 LOG_FILE 삭제
+1. LOG_FILE 삭제
 2. 모든 계측 `runId` → `"post-fix"`
 3. `<reproduction_steps>` 블록과 함께 재현 요청
 4. LOG_FILE 읽기 — **특정 로그 라인 인용으로 성공 근거 제시** (인용 없는 성공 선언 금지)
@@ -223,7 +222,7 @@ LOG_FILE 읽기. 각 가설 판정:
 사용자 확인 후에만:
 1. 모든 `#region agent log` / `#endregion` 블록 제거
 2. 프록시 모드를 썼다면 디버그용 API route/helper 제거
-3. 현재 환경의 가장 안전한 파일 삭제 수단으로 LOG_FILE 삭제
+3. LOG_FILE 삭제
 
 ---
 
@@ -234,6 +233,6 @@ LOG_FILE 읽기. 각 가설 판정:
 - 계측은 검증 완료 전까지 절대 제거 금지
 - `setTimeout` / `sleep`을 픽스로 사용 금지
 - 세션 로그는 전체 파일 삭제로만 정리하고 truncate/touch로 재사용하지 않는다
-- 삭제는 high-level file tool 우선, 없으면 현재 환경의 가장 안전한 동등 수단 사용
+- 삭제는 에이전트의 파일 삭제 도구가 있으면 그것으로, 없으면 그 환경의 동등한 수단으로
 - 성공 선언 시 특정 로그 라인 인용 필수
 - CSP 에러가 보이면 브라우저 direct fetch를 고집하지 말고 same-origin 프록시로 전환

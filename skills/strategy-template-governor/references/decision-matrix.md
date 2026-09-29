@@ -51,38 +51,24 @@ Score each item `0`, `1`, or `2`:
 `1`: Moderate migration cost/risk.
 `2`: High migration cost/risk.
 
-## Decision Heuristic
+## Reading the Scores
 
-Compute:
-- `S = D1 + D3 + D4 + D7`
-- `T = D2 + D5`
-- `L = D6`
-- `U = D8`
-- `R = D9`
+The scores describe the situation; they do not compute the verdict.
 
-Base verdict:
-1. `S >= 6` and `T <= 2` -> Strategy-dominant.
-2. `T >= 3` and `S <= 4` -> Template-dominant.
-3. Otherwise -> Hybrid.
-
-Adjustment for leakage:
-1. If `L >= 2`, force boundary redesign.
-2. If `L >= 2` and base verdict is Template-dominant, reconsider Hybrid.
-
-Anti-forcing override:
-1. If `U == 0` and `R >= 1` -> No-change.
-2. If evidence quality is low (fewer than 3 concrete code evidence points) -> No-change with follow-up inspection plan.
-3. If estimated migration risk is high and expected gains are not explicitly high -> No-change.
+- Strategy fits when runtime swap (D1), algorithm-level divergence (D3), growth (D4), and protocol heterogeneity (D7) are high while the shared skeleton (D2, D5) is thin.
+- Template fits when D2 and D5 are high and differences stay at step level.
+- Hybrid fits when both hold.
+- High leakage (D6) means the boundary needs redesign whatever the verdict.
+- No-change when urgency (D8) is low and cost (D9) is not trivial, when fewer than three concrete code evidence points exist, or when migration risk is high and expected gains are not clearly high.
 
 ## Output Requirements
 
 Always include:
 1. Raw scores for each dimension.
-2. Computed `S`, `T`, `L`, `U`, `R`.
-3. Final verdict.
-4. One-paragraph justification for why each non-selected option is weaker.
-5. One-paragraph disconfirming evidence for the selected verdict.
-6. Cost-of-change summary.
+2. Final verdict.
+3. One-paragraph justification for why each non-selected option is weaker.
+4. One-paragraph disconfirming evidence for the selected verdict.
+5. Cost-of-change summary.
 
 ## Red Flags
 

@@ -42,7 +42,7 @@ Use when the personal repo has not been synced for a while.
 
 - The personal remote must use the SSH host alias from config. Plain `github.com` authenticates with the company key. Check `git config user.email` in the repo too.
 - Copying a whole skill folder drags in `config.local.yml` (personal emails, company paths) and `__pycache__`. The repo `.gitignore` must cover both. A committed `config.local.yml` is a leak by itself.
-- Scanning HEAD is not enough. Earlier commits already leaked content and company author emails, so always scan with `--history`.
+- Scanning HEAD is not enough: older commits can still hold company content and author emails, so always scan with `--history`.
 - `.gitignore` does not untrack files committed earlier. The scan reports them as "tracked but gitignored"; remove them with `git rm --cached`.
 - The usage log covers Claude Code only, and only since it was created. Zero hits does not prove a skill is unused in Codex or Cursor, so ask before deleting. A skill name in Codex session logs is the injected skill list, not usage.
 - A second copy or link under `~/.codex/skills` or `~/.cursor/skills` makes Codex list the skill twice. During a repo sync, report such runtime drift and leave fixing it to a separate request.

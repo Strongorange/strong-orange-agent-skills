@@ -7,7 +7,6 @@ description: |
     - 자동화 테스트만으로는 품질 판단이 부족하고 사람의 주관이 필요한 경우
     - AI 출력, 디자인 생성물, 프롬프트 변경, 파이프라인 변경, UX 후보를 비교할 때
     - 평가 결과를 나중에 집계하거나 재개할 수 있어야 하는 경우
-  구현 스캐폴드가 아니라 가이드형이다. 코드를 바로 만들지 말고 먼저 설계를 확인한다.
 ---
 
 # HITL 평가 대시보드
@@ -155,32 +154,9 @@ python scripts/aggregate.py
 
 ## Step 7: 구현
 
-**구현 전 체크리스트:**
-- [ ] Step 2의 5개 항목이 사용자 승인을 받았는가?
-- [ ] 기존 프로젝트에 평가 schema/포맷이 있는지 확인했는가?
-- [ ] 기존 package manager와 파일 구조를 확인했는가?
+구현 전에 기존 프로젝트에 평가 schema · 포맷이 있는지 확인한다.
 
-**독립 PoC 디렉터리 예시:**
-```
-eval-dashboard/
-├── src/
-│   ├── server.ts          # Node http 서버
-│   └── aggregate.ts       # 집계 스크립트
-├── public/
-│   ├── index.html
-│   ├── app.js
-│   └── style.css
-├── runs/
-│   └── <candidateId>/
-│       ├── scores.json    # envelope array
-│       └── <seed>/<variant>/<runIdx>/
-│           ├── screenshot.png
-│           ├── html.html
-│           └── meta.json
-└── package.json
-```
-
-구체 구현 패턴은 `references/poc-dashboard-pattern.md`를 참고한다.
+디렉터리 구조와 구현 패턴은 `references/poc-dashboard-pattern.md`를 참고한다.
 
 ---
 
@@ -188,7 +164,6 @@ eval-dashboard/
 
 - 모든 평가를 하나의 strict global schema로 강제하기
 - screenshot, UX 메모, LLM 출력을 억지로 숫자 점수로만 환원하기
-- 공통 SKILL에 특정 프로젝트의 rubric·파일명·디렉터리 구조를 하드코딩하기
 - score >= N이면 pass 같은 기계적 threshold만으로 HITL을 닫기
 - evidence reference 없이 점수만 저장하기 (나중에 왜 그 점수인지 추적 불가)
 - 평가 중간에 원본 산출물을 덮어쓰거나 삭제하기
