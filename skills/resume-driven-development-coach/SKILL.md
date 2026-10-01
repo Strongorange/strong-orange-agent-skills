@@ -67,7 +67,8 @@ GitHub (`gh` CLI, must be authenticated):
 
 Obsidian vault:
 - `find <vault> -name "*.md" -newermt "<since>" ! -newermt "<until+1>" -type f` (escape Korean paths).
-- For each match, parse frontmatter. **Keep only if `author` (or any in `authors`) matches `obsidian_authors`.** Files without an author field → drop silently and count.
+- For each match, parse frontmatter. Split `author` (and each entry in `authors`) on `+` and trim. **Keep only if one of the parts exactly matches `obsidian_authors`.** Files without an author field → drop silently and count.
+- `<your-name> + Claude` counts as the user's note, and the `Claude` / `Codex` part becomes the AI-assist evidence. If another person's name is also listed (`<your-name> + <teammate> + Claude`), keep the note but frame it as shared work.
 - Prioritize `작업기록/work-logs/`, `작업기록/troubleshooting/`, `작업기록/lesson/`, the project's folder under `프로젝트/`.
 
 ### 3. Build evidence table (internal)
