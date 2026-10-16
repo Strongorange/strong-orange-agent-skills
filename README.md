@@ -45,6 +45,7 @@ npx skills remove -g -s agent-handoff
 - hitl-eval-dashboard
 - project-research-setup: marketing-skills와 k-skill을 참고해 프로젝트 조사 스킬을 구성
 - refactor-review-checklist
+- research-team
 - resume-asset-coach
 - resume-driven-development-coach
 - review-acid
