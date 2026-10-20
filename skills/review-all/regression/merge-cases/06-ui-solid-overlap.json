@@ -1,0 +1,53 @@
+[
+  {
+    "f": "CartPanel.tsx",
+    "L": "comment",
+    "overallLevel": "high",
+    "primary": [],
+    "other": []
+  },
+  {
+    "f": "CartPanel.tsx",
+    "L": "solid",
+    "overallLevel": "medium",
+    "primary": [
+      {
+        "location": "CartPanel.tsx:30",
+        "issue": "CartPanel 이 화면 렌더와 할인 · 크레딧 판단을 함께 해 변경 이유가 둘이다",
+        "severity": "major",
+        "signal": "SRP: user.plan === 'pro' ? Math.floor(total * 0.8) : total 이 렌더 함수 안에",
+        "suggestion": "할인 · 결제 가능 판단을 별도 함수로 분리"
+      },
+      {
+        "location": "CartPanel.tsx:58",
+        "issue": "CartRow 가 checked 불리언과 onToggle 을 따로 받아 인자 의미가 흩어진다",
+        "severity": "nit",
+        "signal": "불리언 인자 나열",
+        "suggestion": "선택 상태를 하나의 객체로 묶는 것 검토"
+      }
+    ],
+    "other": []
+  },
+  {
+    "f": "CartPanel.tsx",
+    "L": "ui",
+    "overallLevel": "low",
+    "primary": [
+      {
+        "location": "CartPanel.tsx:30-31",
+        "issue": "할인율과 결제 가능 여부 판단이 컴포넌트 본문에 직접 들어 있다. 표시 · 버튼 · 다이얼로그가 같이 쓰는 규칙이라 뷰모델에서 계산해야 한다",
+        "severity": "major",
+        "signal": "user.plan === 'pro' ? Math.floor(total * 0.8) : total 과 user.credits >= payable && selected.length <= 10",
+        "suggestion": "useCartCheckout 이 payable · canCheckout 을 계산해 내려 줌"
+      },
+      {
+        "location": "CartPanel.tsx:14-24",
+        "issue": "items 와 selected 에서 구할 수 있는 total 을 state 에 두고 effect 로 맞춘다",
+        "severity": "major",
+        "signal": "useState(0) + useEffect(() => setTotal(...), [items, selected])",
+        "suggestion": "렌더 중 계산"
+      }
+    ],
+    "other": []
+  }
+]

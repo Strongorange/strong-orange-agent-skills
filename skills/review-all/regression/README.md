@@ -5,7 +5,7 @@
 ## 구성
 
 **렌즈 회귀** (지적 품질 — 상 픽스처 오탐 0, 하/중 recall)
-- `fixtures/` — 도메인 **4종**(comment·test·solid·acid) × 수준(상/중/하) **18개** TS 파일. 상 수준엔 "지적하면 안 되는 함정"이 심겨 있음.
+- `fixtures/` — 도메인 **5종**(comment·test·solid·acid·ui) × 수준(상/중/하) **21개** TS · TSX 파일. 상 수준엔 "지적하면 안 되는 함정"이 심겨 있음.
   - 그중 4개(`solid-complexity.ts`·`comment-gaps.ts`·`test-gaps.test.ts`·`acid-gaps.ts`)는 수준축이 아니라 **신호축** 픽스처다 — 2026-08-14 전수 점검으로 추가한 신호의 양성 확인 + 그 신호가 넘지 말아야 할 함정을 한 파일에 함께 심었다.
   - 신호축 픽스처는 **채점 기준을 결과 보기 전에 따로 적어두고** 대조한다. 함정에 하나라도 걸리면 그 신호는 되돌린다.
 
@@ -15,7 +15,7 @@
 - `scenario/` — 3층. 5파일 골든 시나리오. 배정→fan-out→병합 전 경로 1회.
 
 **정답지**
-- `answer-keys/` — `ANSWER-KEY.md`(comment·test·solid) · `acid-ANSWER-KEY.md` · `merge-cases-KEY.md` · `scenario-KEY.md` · `scenario-assignment.txt`. **리뷰어 에이전트에게 절대 노출 금지.**
+- `answer-keys/` — `ANSWER-KEY.md`(comment·test·solid) · `acid-ANSWER-KEY.md` · `ui-ANSWER-KEY.md` · `merge-cases-KEY.md` · `scenario-KEY.md` · `scenario-assignment.txt`. **리뷰어 에이전트에게 절대 노출 금지.**
 
 > **정답지 노출 방지 (절차로 막는다)**
 > 정답지를 다른 폴더에 숨기는 걸로는 못 막는다 — 파일시스템 접근권이 있는 에이전트는 하네스 경로만 알면 한 칸 위를 볼 수 있다. 대신 **픽스처를 scratch 디렉토리로 복사해 그 경로만** 리뷰어에게 준다. 리뷰어는 하네스가 있다는 사실 자체를 몰라야 한다.
@@ -59,7 +59,7 @@
 > review-all 스킬을 로드해 §3 병합·보고 규칙만 적용하라. 아래 JSON은 렌즈 fan-out 결과다(리뷰를 다시 하지 말 것). 규칙대로 최종 보고서를 출력하라.
 
 케이스별 합격 조건은 `answer-keys/merge-cases-KEY.md`. 각 케이스가 고정하는 것:
-`01` 렌즈 간 other 중복 제거 · `02` 도메인 밖 major 승격 · `03` 버킷 헤더 최저 레벨 · `04` 억지 지적 0 · `05` severity 정렬과 other 위치
+`01` 렌즈 간 other 중복 제거 · `02` 도메인 밖 major 승격 · `03` 버킷 헤더 최저 레벨 · `04` 억지 지적 0 · `05` severity 정렬과 other 위치 · `06` 도메인 버킷끼리 중복(ui 와 solid)
 
 ### 3층 — 골든 시나리오 (전 경로 1회)
 
@@ -76,6 +76,14 @@
 - 하드 함정("쪼개라/전략패턴/인터페이스"): **6명 전원 0**
 - v1.2 원문 대조로 추가한 신호(2026-08-14, 1패스): comment-gaps 4/4 · 함정 3종 침묵, test-gaps 4/4 · 함정 4종 침묵, solid-complexity 5/5 · 함정 4종 침묵, acid-gaps 8/8 · 함정 3종 침묵
 
+- ui(2026-10-20 신설, sonnet 1패스): ui-bad 4/4 전부 major · 함정 2종 침묵, ui-medium 2/2(major 1 · nit 1) · 함정 3종 침묵, ui-good 2명 모두 primary 0. overallLevel low < medium < high 순서대로
+
+## UI 렌즈 추가 때 재실측 (2026-10-20)
+
+- **1층**: PASS. `scenario/CouponBanner.tsx` 가 `comment,solid,ui` 로 배정됨. 따로 돌려 본 `*.test.tsx` 는 `comment,test`(ui 없음), `*.jsx` 는 ui 붙음
+- **2층**: 6케이스(06 신설) sonnet 1명씩. 02~06 PASS. 01 은 승격할 게 없는데 맨 앞에 "⚠ 해당 없음" 줄을 써서 조건 하나를 어김 → 3 병합 절에 "끌어올릴 게 없으면 그 줄을 쓰지 않음" 추가 후 01 재실행 PASS(맨 앞 줄 없음 · 1건으로 합침 · 가장 구체적인 서술)
+- **3층**: 실행 안 함. `CouponBanner.tsx` 의 합격 조건(UI 배정 · dedup ③)은 정답지에만 있음
+
 ## 오케스트레이터 baseline (2026-07-23 초회 실측)
 
 - **1층**: PASS. 음성 케이스(clean 픽스처에 `prisma.slug.create` 한 줄 주입)에서 정상 FAIL — 통과만 하는 껍데기가 아님을 확인.
@@ -90,6 +98,7 @@
 
 ## 알려진 한계
 
+- ui 렌즈의 "말단 컴포넌트" 판정은 이름과 파일 안 위치로만 함. 화면 컴포넌트를 여러 파일로 나눈 레포에선 오판 가능성 있음(실측 안 함)
 - 픽스처가 전부 **단일 파일 23~120줄**이라 교차 파일 신호(solid의 "여러 위치 중복"·"3곳 이상 복붙", acid의 "락 획득 순서 비일관")는 검증된 적이 없다. 오탐 0 주장의 적용 범위가 거기까지는 아니다.
 - 2층은 케이스당 1명이라 저빈도 편차를 못 잡는다(펜스 사례가 1/5로 걸린 건 운). 규칙을 크게 고쳤을 땐 2~3명으로 늘릴 것.
 - 렌즈 회귀·2·3층 모두 채점이 수동이다. 1층만 자동. 자주 고치게 되면 그때 스크립트화할 것.

@@ -56,5 +56,5 @@ description: Review test code for weak assertions, over-mocking, and implementat
 - `primary`: 위 지적 대상만 / `other`: SUT 로직 등 / `overallLevel`: 테스트 **품질**(high=좋음 … low=나쁨, 심각도 아님)
 - 없으면 빈 배열.
 
-**severity 기준 (4렌즈 공통 — 병합 시 이 값으로 정렬하므로 벗어나지 말 것)**
+**severity 기준 (렌즈 공통 — 병합 시 이 값으로 정렬하므로 벗어나지 말 것)**
 `blocker` 데이터 손상·보안·머지 불가 / `major` 릴리스 전 고쳐야 함 / `minor` 고치면 좋음 / `nit` 취향·비강제

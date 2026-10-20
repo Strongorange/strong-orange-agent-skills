@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 1층 — §1-1 파일→렌즈 배정·ACID 프리필터 회귀. LLM 없이 도는 유일한 층.
+# 1층 — §1-1 파일→렌즈 배정·ACID 프리필터 · UI 확장자 판정 회귀. LLM 없이 도는 유일한 층.
 #
 #   ./check-assignment.sh              # 배정 출력
 #   ./check-assignment.sh --check      # 정답과 diff, 어긋나면 exit 1
@@ -15,13 +15,15 @@ KEY="$HERE/answer-keys/scenario-assignment.txt"
 ACID_RE='\$transaction|beginTransaction|prisma\.|knex|typeorm|\.save\(|\.create\(|\.update\(|\.updateMany\(|\.delete\(|INSERT |UPDATE |DELETE |fetch\(|axios|publish\('
 
 assign() {
-  for f in "$DIR"/*.ts; do
+  shopt -s nullglob
+  for f in "$DIR"/*.ts "$DIR"/*.tsx "$DIR"/*.jsx; do
     b="$(basename "$f")"
     if [[ "$b" == *.test.* || "$b" == *.spec.* || "$f" == */__tests__/* ]]; then
       echo "$b: comment,test"
     else
       lenses="comment,solid"
       grep -qE "$ACID_RE" "$f" && lenses="$lenses,acid"
+      [[ "$b" == *.tsx || "$b" == *.jsx ]] && lenses="$lenses,ui"
       echo "$b: $lenses"
     fi
   done

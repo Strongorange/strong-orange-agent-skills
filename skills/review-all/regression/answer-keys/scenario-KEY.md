@@ -14,6 +14,7 @@
 | `payment.ts` | `res.ok` 미검증 (도메인 밖 결함) | 3렌즈가 각자 `other`에 올림 → **dedup 1건** + 승격 |
 | `slugify.ts` | 결함 0, DB/외부호출 없음 | **acid 에이전트가 뜨면 안 됨** + "이상 없음" |
 | `label.ts` | 닫힌 union `switch` (함정) | "전략패턴 써라" 나오면 오탐 |
+| `CouponBanner.tsx` | 쿠폰 사용 조건(만료 · 등급 · 최소 금액 30000)을 컴포넌트 본문에서 계산 | ui 렌즈가 `.tsx` 에만 붙고 UI 버킷에 major 1건. acid 는 안 뜸 |
 
 ## 합격 조건
 
@@ -23,6 +24,7 @@
 - [ ] **dedup**: payment.ts의 `res.ok` 사안이 기타 버킷에 1건만
 - [ ] **승격**: 그 사안이 major 이상으로 매겨졌다면 맨 앞 요약 줄에도 등장
 - [ ] **clean 표기**: slugify.ts·label.ts에 대한 지적이 0건이고, 억지로 채우지 않았다
+- [ ] **UI 배정**: 에이전트 라벨에 `ui:CouponBanner.tsx` 가 있고 `ui:*.ts` 는 없다. UI 버킷에 쿠폰 조건 지적, 설계 버킷에 같은 사안이 남지 않는다(dedup ③)
 - [ ] **함정**: label.ts에 "전략 패턴/enum 분기 제거" 지적이 없다 (있으면 오탐 + 문서역행)
 
 ## 채점 시 무시할 것 (FP 아님)

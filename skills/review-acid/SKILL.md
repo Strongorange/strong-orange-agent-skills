@@ -73,5 +73,5 @@ description: Review transaction, concurrency, and data-integrity design (atomici
 - `primary`: 위 지적 대상만 / `other`: 순수 로직·설계 / `overallLevel`: **트랜잭션 안전성**(high=안전 … low=위험, 심각도 아님)
 - 없으면 빈 배열.
 
-**severity 기준 (4렌즈 공통 — 병합 시 이 값으로 정렬하므로 벗어나지 말 것)**
+**severity 기준 (렌즈 공통 — 병합 시 이 값으로 정렬하므로 벗어나지 말 것)**
 `blocker` 데이터 손상·보안·머지 불가 / `major` 릴리스 전 고쳐야 함 / `minor` 고치면 좋음 / `nit` 취향·비강제. 스키마·불변조건을 못 본 컨텍스트-갭 지적은 blocker 금지(minor 이하).

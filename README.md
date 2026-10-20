@@ -54,6 +54,7 @@ npx skills remove -g -s agent-handoff
 - review-ready-branch-rewrite
 - review-solid
 - review-tests
+- review-ui
 - runtime-evidence-debugger
 - scaffold-dev-verify
 - strategy-template-governor

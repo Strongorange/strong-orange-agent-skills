@@ -3,3 +3,4 @@ label.ts: comment,solid
 orderService.ts: comment,solid,acid
 payment.ts: comment,solid,acid
 slugify.ts: comment,solid
+CouponBanner.tsx: comment,solid,ui
