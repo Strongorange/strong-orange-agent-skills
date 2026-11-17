@@ -41,6 +41,7 @@ npx skills remove -g -s agent-handoff
 
 - agent-handoff
 - agent-skill-sync-manager
+- dev-pc-memory-audit: 개발 PC 의 RAM 을 실측하고, 에이전트 세션마다 늘어나는 MCP · LSP 부터 줄임
 - functional-spec-author
 - hitl-eval-dashboard
 - project-research-setup: marketing-skills와 k-skill을 참고해 프로젝트 조사 스킬을 구성
