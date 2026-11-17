@@ -34,7 +34,7 @@ ps -eo rss,comm --sort=-rss | awk 'NR>1{s[$2]+=$1;c[$2]++} END{for(k in s) print
 ps -eo rss,pid,ppid,etimes,args --sort=-rss | head -40 | cut -c1-200
 ```
 
-- 에이전트 세션별 자식: `ps -eo pid,etimes,args | awk '$3=="claude"'` 로 세션 pid 를 찾고, `ps -eo rss,ppid,args` 에서 그 pid 를 부모로 둔 프로세스를 종류별(MCP 서버 이름 · `tsserver` · `pyright` 등)로 묶음.
+- 에이전트 세션별 자식: 먼저 이 PC 에서 도는 에이전트 · 에디터의 프로세스 이름을 확인(`ps -eo pid,etimes,args`). 그 pid 를 부모로 둔 프로세스를 `ps -eo rss,ppid,args` 에서 찾아 종류별(도구 서버 이름, 언어 서버, 런처)로 개수 · 합계를 냄. 자식의 자식(런처 → 실제 서버)까지 따라갈 것.
 - 새 세션에 자식이 안 뜨는지 볼 때: 세션을 백그라운드로 띄우고 1초 간격으로 `pgrep -P <pid>` 를 확인해 최대 개수를 적음.
 - WSL 이 Windows 에 잡고 있는 양은 Windows 쪽 `vmmemWSL`(또는 `vmmem`). WSL 안의 `buff/cache` 가 크면 그만큼 Windows 로 안 돌아온 것.
 
